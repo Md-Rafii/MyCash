@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>বিকাশ হিসাব | আমার দোকান</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{transition:background 0.2s,color 0.2s;}
+body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .2s,color .2s;}
+
+[data-theme="dark"]{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c27;
+  --border:#2a2a3a;--text:#f0eaf4;--text-muted:#8880a0;
+  --shadow:rgba(0,0,0,.4);
+  --header:linear-gradient(135deg,#1a0010,#200020,#0a0a1a);
+  --header-border:rgba(226,19,110,.3);
+  --card-hover:0 12px 32px rgba(0,0,0,.4);
+  --input-bg:#0f0f14;
+}
+[data-theme="light"]{
+  --bg:#f8f5fe;--surface:#ffffff;--surface2:#f2edfc;
+  --border:#e0d8f0;--text:#1c102e;--text-muted:#7b6b9e;
+  --shadow:rgba(0,0,0,.08);
+  --header:linear-gradient(135deg,#3d0030,#4a004d,#1f0050);
+  --header-border:rgba(226,19,110,.35);
+  --card-hover:0 12px 28px rgba(128,90,210,.12);
+  --input-bg:#ffffff;
+}
+:root{
+  --pink:#E2136E;--pink-dark:#b30d55;--pink-light:#ff8ab5;
+  --green:#2ad47c;--red:#ff4d6d;--yellow:#ffc857;
+  --cyan:#4cc9f0;--purple:#b48fff;
+}
+
+/* HEADER */
+header{background:var(--header);border-bottom:1px solid var(--header-border);padding:0 20px;position:sticky;top:0;z-index:100;backdrop-filter:blur(18px);}
+.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;gap:12px;}
+.logo{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.logo-icon{width:38px;height:38px;background:var(--pink);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 0 14px rgba(226,19,110,.6);animation:glow 3s ease-in-out infinite;}
+@keyframes glow{0%,100%{box-shadow:0 0 14px rgba(226,19,110,.5)}50%{box-shadow:0 0 28px rgba(226,19,110,.9)}}
+.logo-text h1{font-size:18px;font-weight:700;color:#fff;line-height:1.1;}
+.logo-text span{font-size:11px;color:rgba(255,255,255,.6);}
+.header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.header-date{font-size:12px;color:rgba(255,255,255,.6);background:rgba(0,0,0,.25);padding:5px 14px;border-radius:40px;border:1px solid rgba(255,255,255,.12);}
+.theme-toggle{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);border-radius:40px;padding:5px 14px;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;}
+.theme-toggle:hover{background:rgba(255,255,255,.2);}
+.sync-badge{font-size:12px;padding:4px 12px;border-radius:30px;border:1px solid var(--border);display:flex;align-items:center;gap:6px;background:var(--surface2);}
+.sync-badge.online{background:rgba(34,212,123,.12);border-color:var(--green);color:var(--green);}
+.sync-badge.offline{background:rgba(255,77,109,.12);border-color:var(--red);color:var(--red);}
+.sync-badge.syncing{background:rgba(255,209,102,.12);border-color:var(--yellow);color:var(--yellow);}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor;}
+.dot.blink{animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* MAIN */
+main{max-width:1100px;margin:0 auto;padding:24px 20px 40px;}
+
+/* CARDS */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:28px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px 16px;position:relative;overflow:hidden;transition:transform .18s,box-shadow .2s,background .2s;}
+.card:hover{transform:translateY(-2px);box-shadow:var(--card-hover);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0;}
+.card.income::before{background:var(--green);}
+.card.expense::before{background:var(--red);}
+.card.balance::before{background:var(--pink);}
+.card.count::before{background:var(--yellow);}
+.card.allIncome::before{background:var(--cyan);}
+.card.cash::before{background:var(--purple);}
+.card.total::before{background:linear-gradient(90deg,var(--pink),var(--purple));}
+.card.total{background:linear-gradient(135deg,rgba(226,19,110,.08),rgba(180,143,255,.08));}
+[data-theme="light"] .card.total{background:linear-gradient(135deg,rgba(226,19,110,.06),rgba(180,143,255,.06));}
+.card-label{font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:7px;letter-spacing:.4px;}
+.card-amount{font-size:26px;font-weight:800;line-height:1.2;}
+.card.income .card-amount{color:var(--green);}
+.card.expense .card-amount{color:var(--red);}
+.card.balance .card-amount{color:var(--pink-light);}
+.card.count .card-amount{color:var(--yellow);}
+.card.allIncome .card-amount{color:var(--cyan);}
+.card.cash .card-amount{color:var(--purple);}
+.card.total .card-amount{font-size:30px;background:linear-gradient(135deg,#fff 40%,#d9b0ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+[data-theme="light"] .card.total .card-amount{background:linear-gradient(135deg,#1e0030,#b0006e);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.card-sub{font-size:12px;margin-top:8px;display:flex;flex-wrap:wrap;gap:12px;color:var(--text-muted);}
+.sub-item{display:flex;align-items:center;gap:5px;}
+.sub-dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0;}
+.card-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:32px;opacity:.1;pointer-events:none;}
+
+/* SECTION */
+.section-title{font-family:'Tiro Bangla',serif;font-size:18px;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--text);}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;}
+@media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;transition:background .2s;}
+.panel-title{font-weight:600;font-size:14px;color:var(--text-muted);margin-bottom:14px;letter-spacing:.4px;}
+.cash-display{font-size:32px;font-weight:800;color:var(--purple);margin-bottom:14px;word-break:break-word;}
+.row-gap{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.row-gap input{flex:2;min-width:100px;}
+
+/* FORM */
+.add-form{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:24px;margin-bottom:28px;transition:background .2s;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-bottom:18px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+label{font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.4px;}
+input,select{background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:10px 14px;color:var(--text);font-family:'Hind Siliguri',sans-serif;font-size:14px;transition:.2s;outline:none;width:100%;}
+input:focus,select:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(226,19,110,.2);}
+.type-buttons{display:flex;gap:12px;}
+.type-btn{flex:1;padding:10px;border:1px solid var(--border);border-radius:40px;background:var(--input-bg);color:var(--text-muted);cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-weight:500;font-size:14px;transition:.2s;}
+.type-btn.active-income{background:rgba(34,212,123,.18);border-color:var(--green);color:var(--green);}
+.type-btn.active-expense{background:rgba(255,77,109,.18);border-color:var(--red);color:var(--red);}
+.submit-btn{background:var(--pink);color:white;border:none;border-radius:40px;padding:12px 28px;font-family:'Hind Siliguri',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(226,19,110,.35);}
+.submit-btn:hover{background:var(--pink-dark);transform:scale(.98);}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.small-btn{background:var(--surface2);border:1px solid var(--border);border-radius:40px;padding:7px 14px;color:var(--text);font-family:'Hind Siliguri',sans-serif;cursor:pointer;font-size:13px;transition:.2s;white-space:nowrap;}
+.small-btn:hover{background:var(--pink);border-color:var(--pink);color:white;}
+.small-btn.plus{background:rgba(34,212,123,.15);border-color:var(--green);color:var(--green);}
+.small-btn.plus:hover{background:var(--green);color:#000;}
+.small-btn.minus{background:rgba(255,77,109,.15);border-color:var(--red);color:var(--red);}
+.small-btn.minus:hover{background:var(--red);color:white;}
+
+/* DAILY */
+.daily-list{max-height:190px;overflow-y:auto;margin:8px 0;}
+.daily-list::-webkit-scrollbar{width:4px;}
+.daily-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.daily-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.daily-row:last-child{border-bottom:none;}
+.daily-row-left{font-size:13px;color:var(--text-muted);}
+.daily-row-amount{color:var(--cyan);font-weight:700;font-size:14px;}
+.daily-del{background:none;border:none;color:var(--text-muted);font-size:14px;cursor:pointer;padding:2px 6px;border-radius:6px;opacity:0;transition:.2s;}
+.daily-row:hover .daily-del{opacity:1;}
+.daily-del:hover{color:var(--red);background:rgba(255,77,109,.1);}
+.daily-total{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:2px dashed var(--border);font-weight:700;}
+.daily-total span:last-child{color:var(--cyan);font-size:20px;}
+
+/* TABLE */
+.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filter-btn{padding:6px 18px;border-radius:40px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:13px;transition:.2s;}
+.filter-btn.active{background:var(--pink);border-color:var(--pink);color:white;}
+.search-box{flex:1;min-width:180px;position:relative;}
+.search-box input{padding-left:38px;}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;}
+.transactions-wrap{background:var(--surface);border-radius:20px;border:1px solid var(--border);overflow:hidden;transition:background .2s;}
+.tx-header{display:grid;grid-template-columns:95px 1fr 115px 130px 115px 60px;padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.4px;transition:background .2s;}
+.tx-list{max-height:480px;overflow-y:auto;}
+.tx-list::-webkit-scrollbar{width:5px;}
+.tx-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.tx-row{display:grid;grid-template-columns:95px 1fr 115px 130px 115px 60px;padding:14px 20px;border-bottom:1px solid var(--border);align-items:center;transition:background .15s;}
+.tx-row:hover{background:var(--surface2);}
+.tx-row:last-child{border-bottom:none;}
+.tx-type-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:40px;font-size:11px;font-weight:700;}
+.badge-income{background:rgba(34,212,123,.15);color:var(--green);}
+.badge-expense{background:rgba(255,77,109,.15);color:var(--red);}
+.tx-name{font-weight:600;font-size:14px;}
+.tx-note{font-size:11px;color:var(--text-muted);margin-top:3px;}
+.tx-number{font-size:12px;color:var(--text-muted);font-family:monospace;}
+.tx-date{font-size:12px;color:var(--text-muted);}
+.tx-amount{font-weight:800;font-size:15px;}
+.amount-income{color:var(--green);}
+.amount-expense{color:var(--red);}
+.delete-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:4px 8px;border-radius:8px;opacity:0;transition:.2s;}
+.tx-row:hover .delete-btn{opacity:1;}
+.delete-btn:hover{color:var(--red);background:rgba(255,77,109,.12);}
+.empty-state{text-align:center;padding:56px 20px;color:var(--text-muted);}
+.empty-state .emoji{font-size:44px;display:block;margin-bottom:12px;}
+
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:rgba(10,10,20,.96);backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:18px;}
+.loading-overlay.hidden{display:none;}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--pink);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:var(--text-muted);font-size:15px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--surface);border-left:4px solid var(--green);border-radius:16px;padding:14px 22px;font-size:14px;z-index:998;box-shadow:0 8px 24px var(--shadow);transform:translateY(80px);opacity:0;transition:all .25s cubic-bezier(.2,.9,.4,1.1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.error{border-left-color:var(--red);}
+
+@media(max-width:780px){
+  .tx-header{display:none;}
+  .tx-row{grid-template-columns:auto 1fr auto auto;gap:8px;}
+  .tx-number,.tx-date{display:none;}
+  .header-date{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">🔥 ফায়ারবেসে সংযুক্ত হচ্ছে...</div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">৳</div>
+      <div class="logo-text"><h1>বিকাশ হিসাব</h1><span>আমার দোকান</span></div>
+    </div>
+    <div class="header-right">
+      <div class="sync-badge syncing" id="syncBadge">
+        <div class="dot blink"></div>
+        <span id="syncText">সংযোগ হচ্ছে...</span>
+      </div>
+      <button class="theme-toggle" id="themeToggleBtn">☀️ <span>লাইট মোড</span></button>
+      <div class="header-date" id="headerDate"></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="summary-grid">
+    <div class="card income"><div class="card-label">মোট আয় (জমা)</div><div class="card-amount" id="totalIncome">৳ ০</div><div class="card-icon">📥</div></div>
+    <div class="card expense"><div class="card-label">মোট খরচ (উত্তোলন)</div><div class="card-amount" id="totalExpense">৳ ০</div><div class="card-icon">📤</div></div>
+    <div class="card balance"><div class="card-label">বিকাশ ব্যালেন্স</div><div class="card-amount" id="balance">৳ ০</div><div class="card-icon">💰</div></div>
+    <div class="card count"><div class="card-label">মোট লেনদেন</div><div class="card-amount" id="txCount">০টি</div><div class="card-icon">🧾</div></div>
+    <div class="card allIncome"><div class="card-label">আজকের দৈনিক আয়</div><div class="card-amount" id="todayDailyCard">৳ ০</div><div class="card-icon">📆</div></div>
+    <div class="card cash"><div class="card-label">ক্যাশবক্স (হাতে টাকা)</div><div class="card-amount" id="cashBoxCard">৳ ০</div><div class="card-icon">🏦</div></div>
+    <div class="card total" style="grid-column:1/-1;">
+      <div class="card-label">💎 সর্বমোট সম্পদ (বিকাশ ব্যালেন্স + ক্যাশবক্স)</div>
+      <div class="card-amount" id="grandTotal">৳ ০</div>
+      <div class="card-sub">
+        <span class="sub-item"><span class="sub-dot" style="background:var(--pink-light);"></span>বিকাশ: <b id="subBalance">৳ ০</b></span>
+        <span class="sub-item"><span class="sub-dot" style="background:#b48fff;"></span>ক্যাশবক্স: <b id="subCash">৳ ০</b></span>
+      </div>
+      <div class="card-icon">💎</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">📆 দৈনিক আয় (আজকের)</div>
+      <div class="row-gap">
+        <input type="number" id="dailyAmount" placeholder="আজকের আয় (৳)" min="0" />
+        <input type="text" id="dailyLabel" placeholder="বিবরণ" style="max-width:130px;" />
+        <button class="small-btn plus" id="addDailyBtn">+ যোগ</button>
+      </div>
+      <div class="daily-list" id="dailyList">
+        <div style="color:var(--text-muted);font-size:13px;padding:10px 0;">লোড হচ্ছে...</div>
+      </div>
+      <div class="daily-total"><span>আজকের মোট</span><span id="dailyTotal">৳ ০</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">🏦 ক্যাশবক্স — নগদ টাকা</div>
+      <div class="cash-display" id="cashDisplay">৳ ০</div>
+      <div class="row-gap">
+        <input type="number" id="cashInput" placeholder="পরিমাণ (৳)" />
+        <button class="small-btn" id="cashSetBtn">সেট</button>
+        <button class="small-btn plus" id="cashAddBtn">+যোগ</button>
+        <button class="small-btn minus" id="cashSubBtn">−কাটুন</button>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:8px;line-height:1.9;">
+        💡 <b>সেট</b> = নির্দিষ্ট মান বসান<br>
+        💡 <b>+যোগ</b> = বর্তমানে যোগ হবে<br>
+        💡 <b>−কাটুন</b> = বর্তমান থেকে বাদ যাবে
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">➕ নতুন লেনদেন যোগ করুন</div>
+  <div class="add-form">
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:span 2;">
+        <label>লেনদেনের ধরন</label>
+        <div class="type-buttons">
+          <button class="type-btn active-income" id="btnIncome">📥 জমা (আয়)</button>
+          <button class="type-btn" id="btnExpense">📤 উত্তোলন (খরচ)</button>
+        </div>
+      </div>
+      <div class="form-group"><label>নাম / বিবরণ</label><input type="text" id="txName" placeholder="যেমন: পণ্য বিক্রয়" /></div>
+      <div class="form-group"><label>টাকার পরিমাণ (৳)</label><input type="number" id="txAmount" placeholder="০.০০" min="0" /></div>
+      <div class="form-group"><label>বিকাশ নম্বর</label><input type="text" id="txNumber" placeholder="01XXXXXXXXX" maxlength="11" /></div>
+      <div class="form-group"><label>তারিখ</label><input type="date" id="txDate" /></div>
+      <div class="form-group" style="grid-column:span 2;"><label>নোট (ঐচ্ছিক)</label><input type="text" id="txNote" placeholder="অতিরিক্ত তথ্য..." /></div>
+    </div>
+    <button class="submit-btn" id="submitBtn">✅ হিসাব যোগ করুন</button>
+  </div>
+
+  <div class="section-title">📋 লেনদেনের তালিকা</div>
+  <div class="filter-bar">
+    <button class="filter-btn active" id="fAll">সব</button>
+    <button class="filter-btn" id="fIncome">📥 জমা</button>
+    <button class="filter-btn" id="fExpense">📤 উত্তোলন</button>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="নাম বা নম্বর দিয়ে খুঁজুন..." />
+    </div>
+  </div>
+  <div class="transactions-wrap">
+    <div class="tx-header">
+      <div>ধরন</div><div>বিবরণ</div><div>বিকাশ নম্বর</div><div>তারিখ</div><div>পরিমাণ</div><div></div>
+    </div>
+    <div class="tx-list" id="txList">
+      <div class="empty-state"><span class="emoji">⏳</span><p>তথ্য লোড হচ্ছে...</p></div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toastMsg"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ── Firebase init ──
+  const app = initializeApp({
+    apiKey: "AIzaSyDlbDNxRoP9H6fKhMqDTlVaGzg26pbLLq0",
+    authDomain: "dokan-c5e3f.firebaseapp.com",
+    databaseURL: "https://dokan-c5e3f-default-rtdb.firebaseio.com",
+    projectId: "dokan-c5e3f",
+    storageBucket: "dokan-c5e3f.firebasestorage.app",
+    messagingSenderId: "896508499523",
+    appId: "1:896508499523:web:1d1f468a601c28642566f6"
+  });
+  const db = getDatabase(app);
+
+  // ── State ──
+  let transactions = [];
+  let dailyIncomes = [];
+  let cashBox = 0;
+  let currentType = 'income';
+  let currentFilter = 'all';
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  // ── Setup ──
+  document.getElementById('txDate').value = todayStr;
+  document.getElementById('headerDate').textContent =
+    new Date().toLocaleDateString('bn-BD', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+
+  // ── Theme ──
+  applyTheme(localStorage.getItem('theme') || 'dark');
+  document.getElementById('themeToggleBtn').addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem('theme', next);
+  });
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const btn = document.getElementById('themeToggleBtn');
+    btn.innerHTML = theme === 'light' ? '🌙 <span>ডার্ক মোড</span>' : '☀️ <span>লাইট মোড</span>';
+  }
+
+  // ── Helpers ──
+  const $ = id => document.getElementById(id);
+  const val = id => $(id).value.trim();
+  function fmtNum(n) { return Number(n || 0).toLocaleString('bn-BD', { maximumFractionDigits: 0 }); }
+  function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function showToast(msg, type = 'success') {
+    const t = $('toastMsg');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+  function fmtDate(s) {
+    if (!s) return '—';
+    try { return new Date(s + 'T00:00:00').toLocaleDateString('bn-BD', { day:'numeric', month:'short', year:'numeric' }); }
+    catch { return s; }
+  }
+
+  // ── Summary ──
+  function updateSummaries() {
+    const inc = transactions.filter(t => t.type === 'income').reduce((s,t) => s + (t.amount||0), 0);
+    const exp = transactions.filter(t => t.type === 'expense').reduce((s,t) => s + (t.amount||0), 0);
+    const bkashBal = inc - exp;
+    const todayDaily = dailyIncomes.filter(d => d.date === todayStr).reduce((s,d) => s + (d.amount||0), 0);
+    const grand = bkashBal + cashBox;
+
+    $('totalIncome').textContent  = '৳ ' + fmtNum(inc);
+    $('totalExpense').textContent = '৳ ' + fmtNum(exp);
+    $('balance').textContent      = '৳ ' + fmtNum(bkashBal);
+    $('txCount').textContent      = transactions.length + 'টি';
+    $('todayDailyCard').textContent = '৳ ' + fmtNum(todayDaily);
+    $('cashBoxCard').textContent  = '৳ ' + fmtNum(cashBox);
+    $('cashDisplay').textContent  = '৳ ' + fmtNum(cashBox);
+    $('grandTotal').textContent   = '৳ ' + fmtNum(grand);
+    $('subBalance').textContent   = '৳ ' + fmtNum(bkashBal);
+    $('subCash').textContent      = '৳ ' + fmtNum(cashBox);
+  }
+
+  // ── Render transactions ──
+  function renderTransactions() {
+    const search = $('searchInput').value.toLowerCase();
+    let list = [...transactions];
+
+    if (currentFilter === 'income')  list = list.filter(t => t.type === 'income');
+    if (currentFilter === 'expense') list = list.filter(t => t.type === 'expense');
+    if (search) list = list.filter(t =>
+      (t.name  || '').toLowerCase().includes(search) ||
+      (t.number|| '').toLowerCase().includes(search) ||
+      (t.note  || '').toLowerCase().includes(search)
+    );
+
+    const c = $('txList');
+    if (!list.length) {
+      c.innerHTML = `<div class="empty-state"><span class="emoji">📭</span><p>কোনো লেনদেন খুঁজে পাওয়া যায়নি</p></div>`;
+      return;
+    }
+
+    c.innerHTML = list.map(tx => `
+      <div class="tx-row">
+        <div><span class="tx-type-badge ${tx.type==='income'?'badge-income':'badge-expense'}">${tx.type==='income'?'📥 জমা':'📤 উত্তোলন'}</span></div>
+        <div>
+          <div class="tx-name">${esc(tx.name)}</div>
+          ${tx.note ? `<div class="tx-note">${esc(tx.note)}</div>` : ''}
+        </div>
+        <div class="tx-number">${esc(tx.number) || '—'}</div>
+        <div class="tx-date">${fmtDate(tx.date)}</div>
+        <div><span class="tx-amount ${tx.type==='income'?'amount-income':'amount-expense'}">${tx.type==='income'?'+':'-'}৳${fmtNum(tx.amount)}</span></div>
+        <div><button class="delete-btn" data-key="${tx._key}">🗑️</button></div>
+      </div>`).join('');
+
+    // attach delete listeners — event delegation on the list
+    c.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const key = btn.getAttribute('data-key');
+        if (!key) return;
+        if (!confirm('এই লেনদেন মুছে ফেলবেন?')) return;
+        remove(ref(db, 'transactions/' + key))
+          .then(() => showToast('🗑️ মুছে ফেলা হয়েছে', 'error'))
+          .catch(() => showToast('মুছতে সমস্যা হয়েছে', 'error'));
+      });
+    });
+  }
+
+  // ── Render daily ──
+  function renderDailyUI() {
+    const items = dailyIncomes.filter(d => d.date === todayStr);
+    const c = $('dailyList');
+    if (!items.length) {
+      c.innerHTML = `<div style="color:var(--text-muted);font-size:13px;padding:10px 0;">আজকে কোনো আয় যোগ হয়নি</div>`;
+    } else {
+      c.innerHTML = items.map(d => `
+        <div class="daily-row">
+          <span class="daily-row-left">${esc(d.label || 'আয়')}</span>
+          <span class="daily-row-amount">+৳${fmtNum(d.amount)}</span>
+          <button class="daily-del" data-key="${d._key}">🗑️</button>
+        </div>`).join('');
+      c.querySelectorAll('.daily-del').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.getAttribute('data-key');
+          if (!key || !confirm('এই আয় মুছবেন?')) return;
+          remove(ref(db, 'daily/' + key))
+            .then(() => showToast('🗑️ মুছে ফেলা হয়েছে', 'error'))
+            .catch(() => showToast('মুছতে ব্যর্থ', 'error'));
+        });
+      });
+    }
+    $('dailyTotal').textContent = '৳ ' + fmtNum(items.reduce((s,d) => s + (d.amount||0), 0));
+  }
+
+  // ── Firebase listeners ──
+  onValue(ref(db, 'transactions'), snap => {
+    transactions = [];
+    snap.forEach(c => {
+      const d = c.val();
+      if (d && d.name) transactions.push({ _key: c.key, ...d });
+    });
+    transactions.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+    updateSummaries();
+    renderTransactions();
+    $('loadingOverlay').classList.add('hidden');
+    const badge = $('syncBadge');
+    badge.className = 'sync-badge online';
+    badge.querySelector('.dot').classList.remove('blink');
+    $('syncText').textContent = 'লাইভ ✓';
+  }, () => {
+    $('loadingOverlay').classList.add('hidden');
+    $('syncBadge').className = 'sync-badge offline';
+    $('syncText').textContent = 'অফলাইন';
+    showToast('ফায়ারবেস সংযোগ বিচ্ছিন্ন!', 'error');
+  });
+
+  onValue(ref(db, 'daily'), snap => {
+    dailyIncomes = [];
+    snap.forEach(c => {
+      const d = c.val();
+      if (d) dailyIncomes.push({ _key: c.key, ...d });
+    });
+    renderDailyUI();
+    updateSummaries();
+  });
+
+  onValue(ref(db, 'cashBox'), snap => {
+    cashBox = snap.val() || 0;
+    updateSummaries();
+  });
+
+  // ── Add Transaction ──
+  $('submitBtn').addEventListener('click', async () => {
+    const name   = val('txName');
+    const amount = parseFloat(val('txAmount'));
+    const number = val('txNumber');
+    const date   = val('txDate');
+    const note   = val('txNote');
+
+    if (!name)              return showToast('❌ বিবরণ দিন', 'error');
+    if (!amount || amount <= 0) return showToast('❌ সঠিক পরিমাণ দিন', 'error');
+    if (!date)              return showToast('❌ তারিখ নির্বাচন করুন', 'error');
+
+    const btn = $('submitBtn');
+    btn.disabled = true; btn.textContent = '⏳ সেভ হচ্ছে...';
+    try {
+      await push(ref(db, 'transactions'), { type: currentType, name, amount, number, date, note, createdAt: Date.now() });
+      $('txName').value = ''; $('txAmount').value = ''; $('txNumber').value = '';
+      $('txNote').value = ''; $('txDate').value = todayStr;
+      showToast('✅ লেনদেন সংরক্ষিত হয়েছে', 'success');
+    } catch(e) { showToast('❌ সংরক্ষণ ব্যর্থ: ' + e.message, 'error'); }
+    btn.disabled = false; btn.textContent = '✅ হিসাব যোগ করুন';
+  });
+
+  // ── Type buttons ──
+  $('btnIncome').addEventListener('click', () => {
+    currentType = 'income';
+    $('btnIncome').className = 'type-btn active-income';
+    $('btnExpense').className = 'type-btn';
+  });
+  $('btnExpense').addEventListener('click', () => {
+    currentType = 'expense';
+    $('btnIncome').className = 'type-btn';
+    $('btnExpense').className = 'type-btn active-expense';
+  });
+
+  // ── Filter buttons ──
+  function setFilter(f) {
+    currentFilter = f;
+    $('fAll').classList.toggle('active', f === 'all');
+    $('fIncome').classList.toggle('active', f === 'income');
+    $('fExpense').classList.toggle('active', f === 'expense');
+    renderTransactions();
+  }
+  $('fAll').addEventListener('click', () => setFilter('all'));
+  $('fIncome').addEventListener('click', () => setFilter('income'));
+  $('fExpense').addEventListener('click', () => setFilter('expense'));
+  $('searchInput').addEventListener('input', renderTransactions);
+
+  // ── Daily Income ──
+  $('addDailyBtn').addEventListener('click', async () => {
+    const amount = parseFloat(val('dailyAmount'));
+    const label  = val('dailyLabel') || 'আয়';
+    if (isNaN(amount) || amount <= 0) return showToast('❌ সঠিক পরিমাণ দিন', 'error');
+    try {
+      await push(ref(db, 'daily'), { date: todayStr, amount, label, createdAt: Date.now() });
+      $('dailyAmount').value = ''; $('dailyLabel').value = '';
+      showToast('✅ দৈনিক আয় যোগ হয়েছে', 'success');
+    } catch { showToast('সেভ ব্যর্থ', 'error'); }
+  });
+
+  // ── Cash Box ──
+  async function cashAction(action) {
+    const val2 = parseFloat($('cashInput').value);
+    if (isNaN(val2) || val2 < 0) return showToast('❌ পরিমাণ সঠিক দিন', 'error');
+    let newVal = cashBox;
+    if (action === 'set') newVal = val2;
+    else if (action === 'add') newVal = cashBox + val2;
+    else if (action === 'sub') {
+      if (val2 > cashBox) return showToast('❌ ক্যাশবক্সে পর্যাপ্ত টাকা নেই', 'error');
+      newVal = cashBox - val2;
+    }
+    try {
+      await set(ref(db, 'cashBox'), newVal);
+      $('cashInput').value = '';
+      showToast('✅ ক্যাশবক্স আপডেট হয়েছে', 'success');
+    } catch { showToast('আপডেট ব্যর্থ', 'error'); }
+  }
+  $('cashSetBtn').addEventListener('click', () => cashAction('set'));
+  $('cashAddBtn').addEventListener('click', () => cashAction('add'));
+  $('cashSubBtn').addEventListener('click', () => cashAction('sub'));
+</script>
+</body>
+</html>
