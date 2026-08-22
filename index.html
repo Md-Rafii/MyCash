@@ -1,952 +1,1805 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>টাকা ট্র্যাকার | সব লেনদেন দেখাবে</title>
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      background: #0b1120;
-      font-family: 'Hind Siliguri', sans-serif;
-      color: #eef2ff;
-      padding-bottom: 80px;
-    }
-    .login-overlay {
-      position: fixed;
-      inset: 0;
-      background: #0b1120;
-      backdrop-filter: blur(12px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .login-card {
-      background: #111827;
-      border: 1px solid #334155;
-      border-radius: 32px;
-      padding: 32px 24px;
-      width: 90%;
-      max-width: 360px;
-      text-align: center;
-    }
-    .login-card h2 { font-size: 1.6rem; margin-bottom: 8px; }
-    .login-input {
-      width: 100%;
-      background: #1e293b;
-      border: 1px solid #334155;
-      padding: 14px 18px;
-      border-radius: 40px;
-      color: white;
-      margin-bottom: 20px;
-      font-size: 1rem;
-    }
-    .login-btn {
-      background: linear-gradient(135deg, #e2136e, #b91c5c);
-      border: none;
-      width: 100%;
-      padding: 12px;
-      border-radius: 40px;
-      font-weight: bold;
-      color: white;
-      cursor: pointer;
-    }
-    .error-msg { color: #f97316; font-size: 13px; margin-top: 12px; }
-    .app-wrapper { display: none; }
-    .header {
-      background: rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(12px);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .logo-icon {
-      background: linear-gradient(135deg, #e2136e, #a0105a);
-      width: 38px;
-      height: 38px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
-    .logo h1 { font-size: 1.4rem; font-weight: 600; }
-    .logo span { color: #ff77aa; }
-    .logout-btn {
-      background: #334155;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 40px;
-      color: white;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .sync-status {
-      font-size: 11px;
-      background: #1e293b;
-      padding: 5px 12px;
-      border-radius: 30px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .live-dot {
-      width: 8px;
-      height: 8px;
-      background: #10b981;
-      border-radius: 50%;
-      animation: pulse 1.2s infinite;
-    }
-    @keyframes pulse {
-      0% { opacity: 0.4; transform: scale(0.8);}
-      100% { opacity: 1; transform: scale(1.2);}
-    }
-    .container {
-      max-width: 540px;
-      margin: 0 auto;
-      padding: 20px 16px;
-    }
-    .setup-card {
-      background: linear-gradient(145deg, #111827, #0f172a);
-      border: 1px solid #334155;
-      border-radius: 28px;
-      padding: 24px;
-      text-align: center;
-    }
-    .setup-input-group {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 20px 0;
-    }
-    .setup-input {
-      flex: 1;
-      background: #1e293b;
-      border: 1px solid #334155;
-      padding: 12px 16px;
-      border-radius: 40px;
-      color: white;
-    }
-    .btn-primary {
-      background: linear-gradient(95deg, #8b5cf6, #6366f1);
-      border: none;
-      padding: 12px 24px;
-      border-radius: 40px;
-      font-weight: 600;
-      color: white;
-      cursor: pointer;
-    }
-    .total-card {
-      background: linear-gradient(125deg, rgba(139,92,246,0.2), rgba(0,0,0,0.3));
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(139,92,246,0.4);
-      border-radius: 28px;
-      padding: 22px;
-      margin-bottom: 20px;
-    }
-    .total-number { font-size: 2.6rem; font-weight: 800; color: #c7d2fe; }
-    .flex-row {
-      display: flex;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-    .balance-card {
-      background: #111827;
-      border-radius: 24px;
-      padding: 18px;
-      flex: 1;
-      border-left: 4px solid;
-    }
-    .bkash-card { border-left-color: #e2136e; }
-    .cash-card  { border-left-color: #10b981; }
-    .balance-amount { font-size: 26px; font-weight: 700; }
-    .bkash-amount { color: #ff77aa; }
-    .cash-amount  { color: #34d399; }
-    .due-pair {
-      display: flex;
-      gap: 14px;
-      margin-bottom: 28px;
-    }
-    .due-item {
-      background: #111827;
-      border-radius: 20px;
-      padding: 14px;
-      flex: 1;
-      border: 1px solid #f97316;
-    }
-    .due-number { font-size: 20px; font-weight: bold; color: #f97316; }
-    .filter-bar {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      margin: 16px 0;
-    }
-    .filter-chip {
-      background: #1e293b;
-      border: none;
-      padding: 6px 18px;
-      border-radius: 40px;
-      color: #cbd5e1;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .filter-chip.active {
-      background: #e2136e;
-      color: white;
-    }
-    .txn-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 8px;
-      max-height: 500px;
-      overflow-y: auto;
-    }
-    .txn-item {
-      background: #0f172a;
-      border-radius: 20px;
-      padding: 14px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border: 1px solid #1e293b;
-    }
-    .txn-icon {
-      width: 44px;
-      height: 44px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-    }
-    .txn-info { flex: 1; }
-    .txn-title { font-weight: 500; }
-    .txn-date { font-size: 10px; color: #6b7280; }
-    .txn-amount { font-weight: 700; font-size: 1.1rem; }
-    .positive { color: #34d399; }
-    .negative { color: #f87171; }
-    .due-color { color: #f97316; }
-    .delete-btn {
-      background: none;
-      border: none;
-      color: #6b7280;
-      font-size: 1.2rem;
-      cursor: pointer;
-    }
-    .fab {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 60px;
-      height: 60px;
-      border-radius: 30px;
-      background: linear-gradient(135deg, #e2136e, #b91c5c);
-      border: none;
-      color: white;
-      font-size: 28px;
-      box-shadow: 0 8px 20px rgba(226,19,110,0.4);
-      cursor: pointer;
-      z-index: 200;
-    }
-    .modal-mask {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 300;
-      visibility: hidden;
-    }
-    .modal-mask.open { visibility: visible; }
-    .modal-content {
-      background: #0f172a;
-      width: 100%;
-      max-width: 540px;
-      border-radius: 32px 32px 0 0;
-      padding: 24px 20px 32px;
-      border-top: 2px solid #334155;
-      animation: slideUp 0.25s ease;
-    }
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-    .modal-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .type-grid {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 28px;
-    }
-    .type-btn {
-      flex: 1;
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 44px;
-      padding: 12px 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-    }
-    .type-btn.active-transfer { background: #10b981; border-color: #10b981; color: white; }
-    .type-btn.active-cashflow { background: #8b5cf6; border-color: #8b5cf6; color: white; }
-    .type-btn.active-due { background: #f97316; border-color: #f97316; color: white; }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    .form-label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 6px;
-      color: #cbd5e1;
-    }
-    .form-input, .form-select {
-      width: 100%;
-      background: #1e293b;
-      border: 1px solid #334155;
-      padding: 14px 16px;
-      border-radius: 28px;
-      color: white;
-      font-size: 1rem;
-      transition: 0.2s;
-    }
-    .form-input:focus, .form-select:focus {
-      outline: none;
-      border-color: #e2136e;
-      box-shadow: 0 0 0 2px rgba(226,19,110,0.3);
-    }
-    .dual-row {
-      display: flex;
-      gap: 12px;
-      margin-top: 8px;
-    }
-    .dual-option {
-      flex: 1;
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 40px;
-      padding: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-weight: 500;
-    }
-    .dual-option.selected {
-      background: #3b82f6;
-      border-color: #3b82f6;
-      color: white;
-    }
-    .submit-btn {
-      background: linear-gradient(95deg, #e2136e, #b91c5c);
-      width: 100%;
-      padding: 16px;
-      border: none;
-      border-radius: 44px;
-      font-weight: bold;
-      font-size: 1.1rem;
-      margin-top: 16px;
-      color: white;
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-    .submit-btn:active { transform: scale(0.98); }
-    .note-text {
-      font-size: 11px;
-      color: #6b7280;
-      margin-top: 6px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>সাজসজ্জা কসমেটিকস এন্ড পেপার হাউস — Smart Khata POS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Baloo+Da+2:wght@600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase (compat SDK) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --sky:#0EA5E9;
+  --sky-dark:#0284C7;
+  --sky-light:#E6F6FE;
+  --sky-lighter:#F3FAFE;
+  --white:#FFFFFF;
+  --text:#1E293B;
+  --text-soft:#64748B;
+  --success:#16A34A;
+  --success-bg:#E9F9EF;
+  --warning:#F59E0B;
+  --warning-bg:#FFF6E5;
+  --error:#EF4444;
+  --error-bg:#FEECEC;
+  --border:#E3EEF6;
+  --shadow: 0 2px 10px rgba(14,165,233,0.08), 0 1px 2px rgba(14,165,233,0.06);
+  --shadow-lg: 0 8px 30px rgba(14,165,233,0.14);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Hind Siliguri',sans-serif;
+  background:var(--sky-lighter);
+  color:var(--text);
+  -webkit-tap-highlight-color:transparent;
+}
+.app-shell{
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  background:var(--sky-lighter);
+  position:relative;
+  padding-bottom:78px;
+}
+.hide{display:none !important;}
+.brand-font{font-family:'Baloo Da 2',sans-serif;}
+::-webkit-scrollbar{width:0;height:0;}
+
+/* Header */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:linear-gradient(135deg,var(--sky) 0%, var(--sky-dark) 100%);
+  color:#fff;
+  padding:16px 16px 20px;
+  border-radius:0 0 22px 22px;
+  box-shadow:var(--shadow-lg);
+}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;}
+.shop-info .shop-name{font-family:'Baloo Da 2',sans-serif;font-size:17px;font-weight:700;letter-spacing:.2px;line-height:1.25;}
+.shop-info .shop-tag{font-size:11.5px;opacity:.85;margin-top:2px;}
+.top-actions{display:flex;gap:10px;flex-shrink:0;}
+.icon-btn{
+  width:38px;height:38px;border-radius:12px;
+  background:rgba(255,255,255,0.18);
+  display:flex;align-items:center;justify-content:center;
+  border:none;color:#fff;position:relative;cursor:pointer;
+}
+.icon-btn svg{width:19px;height:19px;}
+.badge-dot{
+  position:absolute;top:-3px;right:-3px;
+  background:var(--error);color:#fff;font-size:10px;font-weight:700;
+  min-width:16px;height:16px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;padding:0 3px;
+  border:2px solid var(--sky-dark);
+}
+.header-search{margin-top:14px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.92);border-radius:12px;padding:9px 12px;}
+.header-search input{border:none;outline:none;background:transparent;flex:1;font-family:inherit;font-size:14px;color:var(--text);}
+.header-search svg{width:16px;height:16px;color:var(--sky-dark);flex-shrink:0;}
+
+/* Page title bar for sub-pages */
+.page-header{
+  display:flex;align-items:center;gap:10px;
+  padding:16px 16px 6px;
+}
+.page-header h1{font-family:'Baloo Da 2',sans-serif;font-size:18px;margin:0;flex:1;}
+.back-btn{width:34px;height:34px;border-radius:10px;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);}
+.back-btn svg{width:17px;height:17px;color:var(--sky-dark);}
+
+.content{padding:14px 16px 20px;}
+
+/* Cards */
+.card{
+  background:var(--white);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:16px;
+  border:1px solid var(--border);
+}
+.section-title{font-family:'Baloo Da 2',sans-serif;font-size:15px;font-weight:700;margin:18px 2px 10px;display:flex;align-items:center;justify-content:space-between;}
+.section-title span.link{font-size:12.5px;color:var(--sky-dark);font-weight:500;font-family:'Hind Siliguri',sans-serif;cursor:pointer;}
+
+/* Dashboard stat grid */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.stat-card{
+  background:var(--white);border-radius:14px;padding:13px 14px;
+  box-shadow:var(--shadow);border:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.stat-card .stat-icon{
+  width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;
+}
+.stat-icon svg{width:16px;height:16px;}
+.stat-label{font-size:11.5px;color:var(--text-soft);font-weight:500;}
+.stat-value{font-size:17px;font-weight:700;margin-top:2px;font-family:'Baloo Da 2',sans-serif;}
+.stat-blue .stat-icon{background:var(--sky-light);color:var(--sky-dark);}
+.stat-green .stat-icon{background:var(--success-bg);color:var(--success);}
+.stat-orange .stat-icon{background:var(--warning-bg);color:var(--warning);}
+.stat-red .stat-icon{background:var(--error-bg);color:var(--error);}
+
+.chart-wrap{margin-top:8px;}
+.bars{display:flex;align-items:flex-end;gap:8px;height:120px;padding-top:10px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.bar{width:100%;max-width:26px;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,var(--sky) 0%, var(--sky-dark) 100%);}
+.bar-day{font-size:10.5px;color:var(--text-soft);}
+
+.low-stock-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.low-stock-item:last-child{border-bottom:none;}
+.ls-icon{width:36px;height:36px;border-radius:10px;background:var(--error-bg);color:var(--error);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ls-icon svg{width:17px;height:17px;}
+.ls-name{font-size:13.5px;font-weight:600;}
+.ls-sub{font-size:11.5px;color:var(--text-soft);}
+.ls-badge{margin-left:auto;background:var(--error-bg);color:var(--error);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;}
+
+/* Buttons */
+.btn{
+  border:none;border-radius:12px;font-family:inherit;font-weight:600;font-size:14px;
+  padding:12px 16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn svg{width:16px;height:16px;}
+.btn-primary{background:linear-gradient(135deg,var(--sky) 0%,var(--sky-dark) 100%);color:#fff;box-shadow:0 4px 14px rgba(14,165,233,0.35);}
+.btn-outline{background:var(--white);color:var(--sky-dark);border:1.5px solid var(--sky);}
+.btn-success{background:var(--success);color:#fff;}
+.btn-block{width:100%;}
+.btn-sm{padding:8px 12px;font-size:12.5px;border-radius:9px;}
+.btn-ghost{background:var(--sky-light);color:var(--sky-dark);}
+.btn:disabled{opacity:.6;pointer-events:none;}
+
+/* Bottom nav */
+.bottom-nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;background:var(--white);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-around;
+  padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  box-shadow:0 -4px 20px rgba(14,165,233,0.10);
+  z-index:30;
+}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-soft);background:none;border:none;font-family:inherit;font-size:10.5px;padding:4px 8px;cursor:pointer;border-radius:10px;}
+.nav-item svg{width:20px;height:20px;}
+.nav-item.active{color:var(--sky-dark);font-weight:600;}
+.nav-item.pos-main{position:relative;top:-16px;}
+.nav-item.pos-main .fab{
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--sky) 0%,var(--sky-dark) 100%);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 18px rgba(14,165,233,0.45);border:4px solid var(--white);
+}
+.nav-item.pos-main .fab svg{width:22px;height:22px;color:#fff;}
+
+/* Forms */
+.field{margin-bottom:13px;}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--text-soft);margin-bottom:6px;}
+.field input,.field select,.field textarea{
+  width:100%;border:1.5px solid var(--border);border-radius:11px;padding:11px 12px;
+  font-family:inherit;font-size:14px;color:var(--text);background:var(--white);outline:none;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--sky);}
+.field-row{display:flex;gap:10px;}
+.field-row .field{flex:1;}
+
+/* Modal / sheet */
+.overlay{
+  position:fixed;inset:0;background:rgba(15,40,60,0.45);z-index:100;
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.overlay.center{align-items:center;padding:20px;}
+.sheet{
+  background:var(--white);width:100%;max-width:480px;border-radius:22px 22px 0 0;
+  max-height:88vh;overflow-y:auto;padding:18px 16px 24px;
+  animation:slideup .22s ease;
+}
+.overlay.center .sheet{border-radius:20px;max-height:85vh;}
+@keyframes slideup{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.sheet-handle{width:40px;height:4px;background:var(--border);border-radius:3px;margin:0 auto 14px;}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sheet-head h3{font-family:'Baloo Da 2',sans-serif;font-size:16.5px;margin:0;}
+.close-x{width:30px;height:30px;border-radius:9px;background:var(--sky-light);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--sky-dark);}
+.close-x svg{width:15px;height:15px;}
+
+/* Tabs / chips */
+.chip-row{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;}
+.chip{
+  padding:8px 14px;border-radius:20px;background:var(--white);border:1.5px solid var(--border);
+  font-size:12.5px;font-weight:600;color:var(--text-soft);white-space:nowrap;cursor:pointer;flex-shrink:0;
+}
+.chip.active{background:var(--sky);border-color:var(--sky);color:#fff;}
+
+/* Product grid (POS) */
+.product-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.product-card{background:var(--white);border-radius:14px;padding:12px;border:1px solid var(--border);box-shadow:var(--shadow);cursor:pointer;}
+.product-card .p-icon{width:100%;height:56px;border-radius:10px;background:var(--sky-light);display:flex;align-items:center;justify-content:center;margin-bottom:8px;color:var(--sky-dark);font-size:22px;}
+.product-card .p-name{font-size:13px;font-weight:600;line-height:1.3;min-height:34px;}
+.product-card .p-stock{font-size:10.5px;color:var(--text-soft);margin-top:2px;}
+.product-card .p-price{font-size:14px;font-weight:700;color:var(--sky-dark);margin-top:6px;font-family:'Baloo Da 2',sans-serif;}
+.product-card.out{opacity:.45;pointer-events:none;}
+
+/* Cart */
+.cart-bar{
+  position:fixed;bottom:70px;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;padding:0 16px;z-index:25;
+}
+.cart-bar-inner{
+  background:linear-gradient(135deg,var(--sky) 0%,var(--sky-dark) 100%);color:#fff;
+  border-radius:16px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 8px 24px rgba(14,165,233,0.4);cursor:pointer;
+}
+.cart-line-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);}
+.cart-line-item:last-child{border-bottom:none;}
+.cli-info{flex:1;}
+.cli-name{font-size:13.5px;font-weight:600;}
+.cli-price{font-size:11.5px;color:var(--text-soft);}
+.qty-ctrl{display:flex;align-items:center;gap:8px;background:var(--sky-light);border-radius:10px;padding:4px;}
+.qty-ctrl button{width:24px;height:24px;border-radius:7px;border:none;background:var(--white);color:var(--sky-dark);font-weight:700;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.qty-ctrl span{min-width:18px;text-align:center;font-weight:700;font-size:13px;}
+.cli-total{font-size:13.5px;font-weight:700;min-width:64px;text-align:right;}
+.cli-remove{color:var(--error);background:none;border:none;font-size:16px;cursor:pointer;padding:2px 4px;}
+
+.summary-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13.5px;color:var(--text-soft);}
+.summary-row.total{font-size:16.5px;font-weight:700;color:var(--text);border-top:1.5px dashed var(--border);margin-top:6px;padding-top:12px;font-family:'Baloo Da 2',sans-serif;}
+.pay-methods{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 4px;}
+.pay-method{padding:10px 4px;border-radius:11px;border:1.5px solid var(--border);text-align:center;font-size:11.5px;font-weight:600;cursor:pointer;background:var(--white);}
+.pay-method.active{background:var(--sky-light);border-color:var(--sky);color:var(--sky-dark);}
+
+/* List rows */
+.list-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);}
+.list-row:last-child{border-bottom:none;}
+.avatar{width:42px;height:42px;border-radius:12px;background:var(--sky-light);color:var(--sky-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;font-family:'Baloo Da 2',sans-serif;}
+.lr-title{font-size:14px;font-weight:600;}
+.lr-sub{font-size:11.5px;color:var(--text-soft);margin-top:1px;}
+.lr-right{text-align:right;}
+.lr-amount{font-size:14px;font-weight:700;font-family:'Baloo Da 2',sans-serif;}
+.tag{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:20px;display:inline-block;}
+.tag-green{background:var(--success-bg);color:var(--success);}
+.tag-orange{background:var(--warning-bg);color:var(--warning);}
+.tag-red{background:var(--error-bg);color:var(--error);}
+.tag-blue{background:var(--sky-light);color:var(--sky-dark);}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-soft);}
+.empty-state svg{width:52px;height:52px;color:var(--sky-light);margin-bottom:10px;}
+.empty-state p{font-size:13px;margin:0;}
+
+.search-wrap{display:flex;align-items:center;gap:8px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:10px;}
+.search-wrap svg{width:16px;height:16px;color:var(--text-soft);}
+.search-wrap input{border:none;outline:none;flex:1;font-family:inherit;font-size:13.5px;background:transparent;}
+
+.more-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
+.more-item{background:var(--white);border-radius:16px;padding:16px 14px;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;flex-direction:column;gap:10px;cursor:pointer;}
+.more-item .mi-icon{width:38px;height:38px;border-radius:11px;background:var(--sky-light);color:var(--sky-dark);display:flex;align-items:center;justify-content:center;}
+.more-item .mi-icon svg{width:18px;height:18px;}
+.more-item .mi-title{font-size:13.5px;font-weight:700;}
+.more-item .mi-sub{font-size:11px;color:var(--text-soft);}
+
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--text);color:#fff;padding:11px 20px;border-radius:12px;font-size:13px;
+  z-index:200;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;
+  animation:toastin .25s ease;max-width:85%;text-align:center;
+}
+.toast.success{background:var(--success);}
+.toast.error{background:var(--error);}
+@keyframes toastin{from{opacity:0;transform:translate(-50%,10px);}to{opacity:1;transform:translate(-50%,0);}}
+
+.invoice-box{background:var(--white);border-radius:16px;padding:18px;border:1.5px dashed var(--sky);}
+.invoice-head{text-align:center;padding-bottom:12px;border-bottom:1.5px dashed var(--border);margin-bottom:12px;}
+.invoice-shop{font-family:'Baloo Da 2',sans-serif;font-size:16px;font-weight:700;color:var(--sky-dark);}
+.invoice-meta{font-size:11.5px;color:var(--text-soft);margin-top:6px;line-height:1.6;}
+.invoice-table{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0;}
+.invoice-table th{text-align:right;color:var(--text-soft);font-weight:600;padding:6px 4px;border-bottom:1.5px solid var(--border);font-size:11px;}
+.invoice-table th:first-child,.invoice-table td:first-child{text-align:right;}
+.invoice-table td{padding:7px 4px;border-bottom:1px dashed var(--border);}
+.invoice-table td:first-child{text-align:right;font-weight:600;}
+
+.tab-underline{display:flex;gap:18px;border-bottom:1.5px solid var(--border);margin-bottom:12px;overflow-x:auto;}
+.tab-item{padding:8px 2px;font-size:13px;font-weight:600;color:var(--text-soft);white-space:nowrap;position:relative;cursor:pointer;}
+.tab-item.active{color:var(--sky-dark);}
+.tab-item.active::after{content:'';position:absolute;bottom:-1.5px;left:0;right:0;height:2.5px;background:var(--sky);border-radius:3px;}
+
+.notif-item{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);}
+.notif-item:last-child{border-bottom:none;}
+.notif-item.unread{background:var(--sky-lighter);margin:0 -16px;padding:13px 16px;}
+.ni-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ni-text{font-size:13px;font-weight:600;}
+.ni-time{font-size:11px;color:var(--text-soft);margin-top:2px;}
+
+.report-stat{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+.report-stat:last-child{border-bottom:none;}
+.rs-label{font-size:13px;color:var(--text-soft);font-weight:500;}
+.rs-value{font-size:15px;font-weight:700;font-family:'Baloo Da 2',sans-serif;}
+
+.fw-btn-row{display:flex;gap:10px;margin-top:16px;}
+.fw-btn-row .btn{flex:1;}
+
+/* Auth screen */
+.auth-shell{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:24px 18px;background:linear-gradient(135deg,var(--sky) 0%,var(--sky-dark) 100%);
+}
+.auth-card{width:100%;max-width:380px;background:var(--white);border-radius:22px;box-shadow:var(--shadow-lg);padding:26px 22px;}
+.auth-logo{text-align:center;margin-bottom:18px;}
+.auth-logo .emoji{font-size:34px;}
+.auth-logo .name{font-family:'Baloo Da 2',sans-serif;font-size:17px;font-weight:700;color:var(--sky-dark);margin-top:6px;line-height:1.3;}
+.auth-logo .sub{font-size:12px;color:var(--text-soft);margin-top:4px;}
+.auth-error{background:var(--error-bg);color:var(--error);font-size:12.5px;padding:9px 12px;border-radius:10px;margin-bottom:12px;}
+.auth-toggle{text-align:center;font-size:12.5px;color:var(--text-soft);margin-top:14px;}
+.auth-toggle span{color:var(--sky-dark);font-weight:700;cursor:pointer;}
+.auth-loading{text-align:center;color:#fff;font-family:'Hind Siliguri',sans-serif;font-size:14px;}
+</style>
 </head>
 <body>
+<div id="app" class="app-shell"></div>
 
-<!-- LOGIN SCREEN -->
-<div id="loginScreen" class="login-overlay">
-  <div class="login-card">
-    <div class="login-icon">🔐</div>
-    <h2>অ্যাডমিন লগইন</h2>
-    <p>টাকা ট্র্যাকার ব্যবহার করতে পাসওয়ার্ড দিন</p>
-    <input type="password" id="adminPassword" class="login-input" placeholder="পাসওয়ার্ড">
-    <button class="login-btn" id="loginBtn">প্রবেশ করুন</button>
-    <div id="loginError" class="error-msg"></div>
-  </div>
-</div>
+<script>
+/* ============ FIREBASE ============ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCkvs95dN1iEhltsajc3_yEGglMbBqm0gI",
+  authDomain: "myshop-6d58d.firebaseapp.com",
+  projectId: "myshop-6d58d",
+  storageBucket: "myshop-6d58d.firebasestorage.app",
+  messagingSenderId: "31363776163",
+  appId: "1:31363776163:web:3fd39137549907c4994916",
+  measurementId: "G-XZTPX4W6FQ"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-<!-- MAIN APP -->
-<div id="appWrapper" class="app-wrapper">
-  <div class="header">
-    <div class="logo">
-      <div class="logo-icon">💸</div>
-      <h1>টাকা <span>ট্র্যাকার</span></h1>
-    </div>
-    <div style="display: flex; gap: 10px;">
-      <div class="sync-status">
-        <div class="live-dot"></div>
-        <span id="syncText">সিঙ্কronized</span>
-      </div>
-      <button class="logout-btn" id="logoutBtn">🚪 লগআউট</button>
-    </div>
-  </div>
+let currentUser = null;
+let authMode = 'login'; // 'login' | 'signup'
+let authBusy = false;
+let authErrorMsg = '';
+let dataLoaded = false;
+let saveTimer = null;
 
-  <div class="container">
-    <!-- Setup Section -->
-    <div id="setupScreen">
-      <div class="setup-card">
-        <h2>💰 শুভেচ্ছা</h2>
-        <p>আপনার বিকাশ ও ক্যাশের বর্তমান টাকা লিখুন</p>
-        <div class="setup-input-group">
-          <input type="number" id="initBkash" class="setup-input" placeholder="বিকাশে টাকা">
-          <input type="number" id="initCash" class="setup-input" placeholder="ক্যাশে টাকা">
-        </div>
-        <button class="btn-primary" id="startSetupBtn">🚀 শুরু করুন</button>
-      </div>
-    </div>
+/* ============ ICONS ============ */
+const I = {
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
+  cart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>',
+  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>',
+  grid:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+  right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+  taka:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M6 8h9M6 12h7a4 4 0 0 1 0 8H8"/></svg>',
+  trend:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 9 11 13 15 21 7"/><path d="M15 7h6v6"/></svg>',
+  wallet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M17 12a2 2 0 1 0 0 4h4v-4Z"/></svg>',
+  boxes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.5 7 9.5-5 9.5 5-9.5 5-9.5-5Z"/><path d="M2.5 12 12 17l9.5-5"/><path d="M2.5 7v10L12 22l9.5-5V7"/></svg>',
+  alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  receipt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2h16v20l-3-2-2 2-2-2-2 2-2-2-2 2-3-2Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>',
+  history:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13a9 9 0 1 0 2.12-8.94L3 8"/><path d="M12 7v5l3 3"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15v4M12 11v8M17 6v13"/></svg>',
+  settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>',
+  phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 9.9a16 16 0 0 0 6 6l1.2-1.3a2 2 0 0 1 2.1-.4c.9.4 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg>',
+  store:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l1.5-4h17L22 7"/><path d="M2 7h20v13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1Z"/><path d="M9 21v-5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v5"/></svg>',
+  printer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5 15.4 17.5M15.4 6.5 8.6 10.5"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  bag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 7v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-3-5Z"/><path d="M3 7h18M16 11a4 4 0 0 1-8 0"/></svg>',
+  tag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.6 2H4a2 2 0 0 0-2 2v8.6a2 2 0 0 0 .6 1.4l9 9a2 2 0 0 0 2.8 0l7.6-7.6a2 2 0 0 0 0-2.8l-9-9a2 2 0 0 0-1.4-.6Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>',
+  download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>',
+  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>',
+  layers:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 17l9 5 9-5"/></svg>',
+  minus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>',
+  scan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M3 12h18"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+  logout:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>',
+};
 
-    <!-- Dashboard -->
-    <div id="dashboardScreen" style="display: none;">
-      <div class="total-card">
-        <div class="total-label">মোট সম্পদ (বিকাশ + ক্যাশ)</div>
-        <div class="total-number">৳ <span id="totalAmount">0</span></div>
-        <div style="text-align: right; margin-top: 8px;">
-          <button class="reset-small" id="globalResetBtn">⟳ রিসেট অ্যাপ</button>
-        </div>
-      </div>
+/* ============ STATE ============ */
+let uid = 1000;
+const newId = (p)=> p+'_'+(uid++)+'_'+Math.random().toString(36).slice(2,6);
 
-      <div class="flex-row">
-        <div class="balance-card bkash-card">
-          <div class="balance-icon">📱</div>
-          <div class="balance-label">বিকাশ ব্যালান্স</div>
-          <div class="balance-amount bkash-amount">৳ <span id="bkashAmount">0</span></div>
-        </div>
-        <div class="balance-card cash-card">
-          <div class="balance-icon">💵</div>
-          <div class="balance-label">ক্যাশ ব্যালান্স</div>
-          <div class="balance-amount cash-amount">৳ <span id="cashAmount">0</span></div>
-        </div>
-      </div>
+const state = {
+  view:'dashboard',
+  moreOpen:false,
+  cart:[],
+  cartCustomerId:null,
+  payMethod:'ক্যাশ',
+  paidAmount:0,
+  cartDiscount:0,
+  posSearch:'',
+  posCategory:'সব',
+  stockSearch:'',
+  stockCategory:'সব',
+  stockLowOnly:false,
+  historyFilter:'today',
+  historyType:'সব',
+  reportRange:'monthly',
+  customerSearch:'',
+  activeCustomerId:null,
+  activeProductId:null,
+  activeSaleId:null,
+  lastInvoiceId:null,
+  toast:null,
 
-      <div class="due-pair">
-        <div class="due-item">
-          <div class="due-title">📥 বাকি (পাবো)</div>
-          <div class="due-number">৳ <span id="dueReceiveTotal">0</span></div>
-        </div>
-        <div class="due-item">
-          <div class="due-title">📤 বাকি (দেবো)</div>
-          <div class="due-number">৳ <span id="duePayTotal">0</span></div>
-        </div>
-      </div>
+  settings:{
+    shopName:'সাজসজ্জা কসমেটিকস এন্ড পেপার হাউস',
+    address:'',
+    phone:'',
+    currency:'৳',
+    invoicePrefix:'INV',
+    theme:'sky',
+  },
 
-      <div style="display: flex; justify-content: space-between; align-items: baseline;">
-        <h3 style="font-size: 1.1rem;">📜 লেনদেন ইতিহাস</h3>
-        <span id="txnCountBadge" style="background:#1e293b; padding:2px 10px; border-radius: 20px;">0টি</span>
-      </div>
+  categories:[],
+  products:[],
 
-      <div class="filter-bar" id="filterBar">
-        <button class="filter-chip active" data-filter="all">সব</button>
-        <button class="filter-chip" data-filter="transfer">ট্রান্সফার</button>
-        <button class="filter-chip" data-filter="cashflow">আয়/খরচ</button>
-        <button class="filter-chip" data-filter="due">বাকি</button>
-      </div>
+  customers:[
+    {id:'cu4', name:'ওয়াক-ইন কাস্টমার', phone:'-', due:0},
+  ],
 
-      <div id="transactionList" class="txn-list">
-        <div class="txn-item">🔄 ডাটা লোড হচ্ছে...</div>
-      </div>
-    </div>
-  </div>
+  sales:[],
+  purchases:[],
+  ledger:[],
+  history:[],
+  notifications:[],
+};
 
-  <button class="fab" id="openModalBtn">+</button>
+function daysAgoISO(n){const d=new Date();d.setDate(d.getDate()-n);return d.toISOString();}
 
-  <!-- TRANSACTION MODAL -->
-  <div id="transactionModal" class="modal-mask">
-    <div class="modal-content">
-      <div class="modal-title">
-        <span>➕</span> লেনদেন যোগ করুন
-      </div>
-      <div class="type-grid">
-        <button class="type-btn" id="typeTransfer">
-          <span>🔄</span> <span>ট্রান্সফার</span>
-        </button>
-        <button class="type-btn" id="typeCashFlow">
-          <span>💰</span> <span>আয়/খরচ</span>
-        </button>
-        <button class="type-btn" id="typeDue">
-          <span>⏳</span> <span>বাকি</span>
-        </button>
-      </div>
+/* ============ HELPERS ============ */
+const cur = (n)=> state.settings.currency + Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:0});
+const fmtDate = (iso)=>{
+  const d = new Date(iso);
+  const days=['রবি','সোম','মঙ্গল','বুধ','বৃহ','শুক্র','শনি'];
+  const months=['জানু','ফেব্রু','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টে','অক্টো','নভে','ডিসে'];
+  return `${d.getDate()} ${months[d.getMonth()]}, ${d.getFullYear()} · ${String(d.getHours()%12||12).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} ${d.getHours()>=12?'PM':'AM'}`;
+};
+const fmtDateShort = (iso)=>{
+  const d = new Date(iso);
+  const months=['জানু','ফেব্রু','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টে','অক্টো','নভে','ডিসে'];
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+};
+function isSameDay(iso,d2){const d1=new Date(iso);return d1.toDateString()===d2.toDateString();}
+function isToday(iso){return isSameDay(iso,new Date());}
+function isYesterday(iso){const y=new Date();y.setDate(y.getDate()-1);return isSameDay(iso,y);}
+function isThisWeek(iso){const d=new Date(iso),now=new Date();const start=new Date(now);start.setDate(now.getDate()-now.getDay());start.setHours(0,0,0,0);return d>=start;}
+function isThisMonth(iso){const d=new Date(iso),now=new Date();return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();}
 
-      <div id="transferPanel">
-        <div class="form-group">
-          <div class="form-label">ট্রান্সফারের দিক</div>
-          <div class="dual-row">
-            <div class="dual-option" data-transfer="cash_to_bkash">💵 ক্যাশ → 📱 বিকাশ</div>
-            <div class="dual-option" data-transfer="bkash_to_cash">📱 বিকাশ → 💵 ক্যাশ</div>
-          </div>
-          <div class="note-text">✅ মোট টাকা অপরিবর্তিত থাকবে</div>
-        </div>
-      </div>
+function categoryName(id){const c=state.categories.find(x=>x.id===id);return c?c.name:'-';}
+function productById(id){return state.products.find(p=>p.id===id);}
+function customerById(id){return state.customers.find(c=>c.id===id);}
 
-      <div id="cashflowPanel" style="display: none;">
-        <div class="form-group">
-          <div class="form-label">পকেট নির্বাচন</div>
-          <div class="dual-row">
-            <div class="dual-option" data-pocket="bkash">📱 বিকাশ</div>
-            <div class="dual-option" data-pocket="cash">💵 ক্যাশ</div>
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="form-label">লেনদেনের ধরন</div>
-          <div class="dual-row">
-            <div class="dual-option" data-cfdir="income">⬇️ আয় (+)</div>
-            <div class="dual-option" data-cfdir="expense">⬆️ খরচ (-)</div>
-          </div>
-        </div>
-      </div>
+function showToast(msg,type='default'){
+  state.toast={msg,type};
+  render();
+  setTimeout(()=>{state.toast=null;render();},2200);
+}
 
-      <div id="duePanel" style="display: none;">
-        <div class="form-group">
-          <div class="form-label">বাকির ধরন</div>
-          <div class="dual-row">
-            <div class="dual-option" data-due="receive">📥 পাবো (আমার পাওনা)</div>
-            <div class="dual-option" data-due="pay">📤 দেবো (পরে দিব)</div>
-          </div>
-        </div>
-        <div class="form-group">
-          <input type="text" id="duePerson" class="form-input" placeholder="ব্যক্তি / দোকানের নাম (ঐচ্ছিক)">
-        </div>
-      </div>
+function addNotification(type,message){
+  state.notifications.unshift({id:newId('n'),type,message,date:new Date().toISOString(),read:false});
+}
+function addHistory(type,desc,amount,refId){
+  state.history.unshift({id:newId('h'),type,date:new Date().toISOString(),desc,amount,refId:refId||null});
+}
 
-      <div class="form-group">
-        <label class="form-label">👤 নাম / খাত (ঐচ্ছিক)</label>
-        <input type="text" id="contactName" class="form-input" placeholder="যেমন: রহিম, দোকান, বাজার ইত্যাদি">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">💰 পরিমাণ (টাকা)</label>
-        <input type="number" id="txnAmountInput" class="form-input" placeholder="০.০০" step="any">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">📝 বিবরণ</label>
-        <input type="text" id="txnDescInput" class="form-input" placeholder="বিশদ বিবরণ (ঐচ্ছিক)">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">📅 তারিখ ও সময়</label>
-        <input type="datetime-local" id="txnDateTime" class="form-input">
-      </div>
-
-      <button class="submit-btn" id="saveTxnBtn">✔️ সংরক্ষণ করুন</button>
-    </div>
-  </div>
-</div>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
-
-  // ---------- LOGIN ----------
-  const ADMIN_PASSWORD = "admin123";
-  const loginScreen = document.getElementById('loginScreen');
-  const appWrapper = document.getElementById('appWrapper');
-  const loginBtn = document.getElementById('loginBtn');
-  const loginError = document.getElementById('loginError');
-  const logoutBtn = document.getElementById('logoutBtn');
-
-  function checkLoginStatus() {
-    if (sessionStorage.getItem('adminLoggedIn') === 'true') {
-      loginScreen.style.display = 'none';
-      appWrapper.style.display = 'block';
-      initFirebaseApp();
-    } else {
-      loginScreen.style.display = 'flex';
-      appWrapper.style.display = 'none';
-    }
+function checkStockNotify(product){
+  if(product.stock<=0){
+    addNotification('out_stock', product.name+' স্টক শেষ হয়ে গেছে');
+  } else if(product.stock<=product.minStock){
+    addNotification('low_stock', product.name+' স্টক কম আছে ('+product.stock+' '+product.unit+' বাকি)');
   }
-  loginBtn.addEventListener('click', () => {
-    const pwd = document.getElementById('adminPassword').value;
-    if (pwd === ADMIN_PASSWORD) {
-      sessionStorage.setItem('adminLoggedIn', 'true');
-      checkLoginStatus();
+}
+
+/* ============ FIFO BATCH STOCK / COSTING ============ */
+function ensureBatches(p){
+  if(!Array.isArray(p.batches)){
+    p.batches = p.stock>0 ? [{id:newId('b'),qty:p.stock,cost:p.purchasePrice||0,date:new Date().toISOString()}] : [];
+  }
+}
+function addStockBatch(p,qty,cost,date){
+  ensureBatches(p);
+  if(qty<=0) return;
+  p.batches.push({id:newId('b'),qty,cost,date:date||new Date().toISOString()});
+  p.stock = (p.stock||0)+qty;
+  p.purchasePrice = cost;
+}
+function consumeStockFIFO(p,qty){
+  ensureBatches(p);
+  let remaining = qty;
+  let totalCost = 0;
+  const lines=[];
+  while(remaining>0 && p.batches.length>0){
+    const b = p.batches[0];
+    const take = Math.min(b.qty,remaining);
+    totalCost += take*b.cost;
+    lines.push({qty:take,cost:b.cost});
+    b.qty -= take;
+    remaining -= take;
+    if(b.qty<=0) p.batches.shift();
+  }
+  if(remaining>0){
+    totalCost += remaining*(p.purchasePrice||0);
+    lines.push({qty:remaining,cost:p.purchasePrice||0});
+    remaining=0;
+  }
+  p.stock = Math.max(0,(p.stock||0)-qty);
+  return {totalCost, avgCost: qty>0?totalCost/qty:0, lines};
+}
+
+function unreadCount(){return state.notifications.filter(n=>!n.read).length;}
+
+function go(view){state.view=view; state.moreOpen=false; window.scrollTo(0,0); render();}
+
+/* ============ FIRESTORE PERSISTENCE ============ */
+function saveState(){
+  if(!currentUser) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    db.collection('shops').doc(currentUser.uid).set({
+      settings: state.settings,
+      categories: state.categories,
+      products: state.products,
+      customers: state.customers,
+      sales: state.sales,
+      purchases: state.purchases,
+      ledger: state.ledger,
+      history: state.history,
+      notifications: state.notifications,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, {merge:true}).catch(err=>{
+      console.error('Firestore save error:', err);
+    });
+  }, 250);
+}
+
+async function loadUserData(uidStr){
+  const docRef = db.collection('shops').doc(uidStr);
+  try{
+    const snap = await docRef.get();
+    if(snap.exists){
+      const d = snap.data() || {};
+      if(d.settings) Object.assign(state.settings, d.settings);
+      if(Array.isArray(d.categories)) state.categories = d.categories;
+      if(Array.isArray(d.products)) state.products = d.products;
+      if(Array.isArray(d.customers) && d.customers.length) state.customers = d.customers;
+      if(Array.isArray(d.sales)) state.sales = d.sales;
+      if(Array.isArray(d.purchases)) state.purchases = d.purchases;
+      if(Array.isArray(d.ledger)) state.ledger = d.ledger;
+      if(Array.isArray(d.history)) state.history = d.history;
+      if(Array.isArray(d.notifications)) state.notifications = d.notifications;
     } else {
-      loginError.innerText = 'ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।';
+      await docRef.set({
+        settings: state.settings,
+        categories: state.categories,
+        products: state.products,
+        customers: state.customers,
+        sales: state.sales,
+        purchases: state.purchases,
+        ledger: state.ledger,
+        history: state.history,
+        notifications: state.notifications,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    dataLoaded = true;
+  } catch(err){
+    console.error('Firestore load error:', err);
+    dataLoaded = true;
+  }
+}
+
+function logout(){
+  auth.signOut();
+}
+
+/* ============ AUTH SCREEN ============ */
+function renderAuthScreen(){
+  return `
+  <div class="auth-shell">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="emoji">🏪</div>
+        <div class="name">সাজসজ্জা কসমেটিকস এন্ড পেপার হাউস</div>
+        <div class="sub">${authMode==='login'?'আপনার হিসাবে লগইন করুন':'নতুন একাউন্ট তৈরি করুন'}</div>
+      </div>
+      ${authErrorMsg ? `<div class="auth-error">${escapeHtml(authErrorMsg)}</div>` : ''}
+      <div class="field"><label>ইমেইল</label><input id="auth_email" type="email" placeholder="you@example.com" ${authBusy?'disabled':''}></div>
+      <div class="field"><label>পাসওয়ার্ড</label><input id="auth_password" type="password" placeholder="কমপক্ষে ৬ ডিজিট" ${authBusy?'disabled':''}></div>
+      <button class="btn btn-primary btn-block" ${authBusy?'disabled':''} onclick="${authMode==='login'?'handleLogin()':'handleSignup()'}">
+        ${authBusy ? 'অপেক্ষা করুন...' : (authMode==='login' ? 'লগইন করুন' : 'একাউন্ট তৈরি করুন')}
+      </button>
+      <div class="auth-toggle">
+        ${authMode==='login'
+          ? `একাউন্ট নেই? <span onclick="switchAuthMode('signup')">নতুন একাউন্ট তৈরি করুন</span>`
+          : `আগে থেকেই একাউন্ট আছে? <span onclick="switchAuthMode('login')">লগইন করুন</span>`}
+      </div>
+    </div>
+  </div>`;
+}
+function switchAuthMode(mode){ authMode=mode; authErrorMsg=''; render(); }
+
+function authErrorText(err){
+  const code = err && err.code || '';
+  const map = {
+    'auth/invalid-email':'সঠিক ইমেইল দিন',
+    'auth/user-not-found':'এই ইমেইলে কোনো একাউন্ট পাওয়া যায়নি',
+    'auth/wrong-password':'পাসওয়ার্ড সঠিক নয়',
+    'auth/invalid-credential':'ইমেইল অথবা পাসওয়ার্ড সঠিক নয়',
+    'auth/email-already-in-use':'এই ইমেইলে ইতিমধ্যে একাউন্ট আছে',
+    'auth/weak-password':'পাসওয়ার্ড কমপক্ষে ৬ ডিজিট হতে হবে',
+    'auth/missing-password':'পাসওয়ার্ড দিন',
+  };
+  return map[code] || (err && err.message) || 'কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন';
+}
+
+function handleLogin(){
+  const email = document.getElementById('auth_email').value.trim();
+  const password = document.getElementById('auth_password').value;
+  if(!email || !password){ authErrorMsg='ইমেইল ও পাসওয়ার্ড দিন'; render(); return; }
+  authBusy=true; authErrorMsg=''; render();
+  auth.signInWithEmailAndPassword(email,password)
+    .catch(err=>{ authBusy=false; authErrorMsg=authErrorText(err); render(); });
+}
+function handleSignup(){
+  const email = document.getElementById('auth_email').value.trim();
+  const password = document.getElementById('auth_password').value;
+  if(!email || !password){ authErrorMsg='ইমেইল ও পাসওয়ার্ড দিন'; render(); return; }
+  authBusy=true; authErrorMsg=''; render();
+  auth.createUserWithEmailAndPassword(email,password)
+    .catch(err=>{ authBusy=false; authErrorMsg=authErrorText(err); render(); });
+}
+
+/* ============ RENDER ROOT ============ */
+function render(){
+  const app = document.getElementById('app');
+
+  if(!currentUser){
+    app.innerHTML = renderAuthScreen();
+    return;
+  }
+  if(!dataLoaded){
+    app.innerHTML = `<div class="auth-shell"><div class="auth-loading">লোড হচ্ছে...</div></div>`;
+    return;
+  }
+
+  let body = '';
+  if(state.view==='dashboard') body = renderDashboard();
+  else if(state.view==='pos') body = renderPOS();
+  else if(state.view==='customers') body = renderCustomers();
+  else if(state.view==='customerProfile') body = renderCustomerProfile();
+  else if(state.view==='stock') body = renderStock();
+  else if(state.view==='purchase') body = renderPurchase();
+  else if(state.view==='history') body = renderHistory();
+  else if(state.view==='reports') body = renderReports();
+  else if(state.view==='settings') body = renderSettings();
+  else if(state.view==='categories') body = renderCategories();
+  else if(state.view==='notifications') body = renderNotifications();
+  else body = renderDashboard();
+
+  app.innerHTML = `
+    ${renderTopbar()}
+    <div class="content">${body}</div>
+    ${state.cart.length && state.view==='pos' ? renderCartBar() : ''}
+    ${renderBottomNav()}
+    ${state.moreOpen ? renderMoreSheet() : ''}
+    ${modalHTML()}
+    ${state.toast ? `<div class="toast ${state.toast.type}">${state.toast.msg}</div>` : ''}
+  `;
+}
+
+function renderTopbar(){
+  if(state.view==='dashboard' || state.view==='pos'){
+    return `
+    <div class="topbar">
+      <div class="topbar-row">
+        <div class="shop-info">
+          <div class="shop-name">🏪 ${state.settings.shopName}</div>
+          <div class="shop-tag">আপনার দোকান, আপনার হিসাব</div>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" onclick="go('notifications')">${I.bell}${unreadCount()?`<span class="badge-dot">${unreadCount()}</span>`:''}</button>
+          <button class="icon-btn" onclick="go('settings')">${I.user}</button>
+        </div>
+      </div>
+      ${state.view==='dashboard' ? `<div class="header-search">${I.search}<input placeholder="প্রোডাক্ট বা কাস্টমার খুঁজুন..." oninput="quickSearch(this.value)"></div>`:''}
+    </div>`;
+  }
+  const pageTitles = {
+    customers:'বাকি খাতা', customerProfile:'কাস্টমার প্রোফাইল', stock:'স্টক ম্যানেজমেন্ট',
+    purchase:'নতুন ক্রয়', history:'হিস্টোরি', reports:'রিপোর্টস', settings:'সেটিংস',
+    categories:'ক্যাটাগরি', notifications:'নোটিফিকেশন'
+  };
+  const backTarget = state.view==='customerProfile' ? 'customers' : (state.view==='categories' ? 'stock' : 'dashboard');
+  return `
+    <div class="page-header" style="background:var(--sky-lighter);">
+      <button class="back-btn" onclick="go('${backTarget}')">${I.back}</button>
+      <h1>${pageTitles[state.view]||''}</h1>
+    </div>`;
+}
+
+function renderBottomNav(){
+  return `
+  <div class="bottom-nav">
+    <button class="nav-item ${state.view==='dashboard'?'active':''}" onclick="go('dashboard')">${I.home}<span>হোম</span></button>
+    <button class="nav-item ${['customers','customerProfile'].includes(state.view)?'active':''}" onclick="go('customers')">${I.wallet}<span>বাকি</span></button>
+    <button class="nav-item pos-main" onclick="go('pos')"><span class="fab">${I.cart}</span></button>
+    <button class="nav-item ${['stock','categories'].includes(state.view)?'active':''}" onclick="go('stock')">${I.box}<span>স্টক</span></button>
+    <button class="nav-item" onclick="toggleMore()">${I.grid}<span>আরও</span></button>
+  </div>`;
+}
+
+function toggleMore(){state.moreOpen=!state.moreOpen; render();}
+
+function renderMoreSheet(){
+  const items = [
+    {v:'purchase',icon:I.bag,title:'ক্রয়',sub:'নতুন স্টক ক্রয়'},
+    {v:'history',icon:I.history,title:'হিস্টোরি',sub:'সব লেনদেন'},
+    {v:'reports',icon:I.chart,title:'রিপোর্টস',sub:'বিক্রয় ও লাভ'},
+    {v:'categories',icon:I.layers,title:'ক্যাটাগরি',sub:'পণ্যের বিভাগ'},
+    {v:'notifications',icon:I.bell,title:'নোটিফিকেশন',sub:unreadCount()+' নতুন'},
+    {v:'settings',icon:I.settings,title:'সেটিংস',sub:'দোকানের তথ্য'},
+  ];
+  return `
+  <div class="overlay" onclick="if(event.target===this) toggleMore()">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head"><h3>আরও অপশন</h3><button class="close-x" onclick="toggleMore()">${I.close}</button></div>
+      <div class="more-grid">
+        ${items.map(it=>`
+          <div class="more-item" onclick="go('${it.v}')">
+            <div class="mi-icon">${it.icon}</div>
+            <div><div class="mi-title">${it.title}</div><div class="mi-sub">${it.sub}</div></div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function quickSearch(v){ if(v.trim()){ state.posSearch=v; go('pos'); } }
+
+/* ============ DASHBOARD ============ */
+function renderDashboard(){
+  const todaySales = state.sales.filter(s=>isToday(s.date));
+  const todayTotal = todaySales.reduce((a,s)=>a+s.grandTotal,0);
+  const todayProfit = todaySales.reduce((a,s)=> a + s.items.reduce((pa,it)=>{
+    const cost = (typeof it.costTotal==='number') ? it.costTotal : ((productById(it.productId)?productById(it.productId).purchasePrice:0)*it.qty);
+    return pa + (it.price*it.qty - cost);
+  },0) - s.discount, 0);
+  const totalDue = state.customers.reduce((a,c)=>a+c.due,0);
+  const stockValue = state.products.reduce((a,p)=>a+p.stock*p.purchasePrice,0);
+  const lowStock = state.products.filter(p=>p.stock<=p.minStock);
+  const todayDueSales = todaySales.filter(s=>s.due>0).reduce((a,s)=>a+s.due,0);
+
+  const chartDays=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const total = state.sales.filter(s=>isSameDay(s.date,d)).reduce((a,s)=>a+s.grandTotal,0);
+    chartDays.push({d,total});
+  }
+  const maxVal = Math.max(...chartDays.map(c=>c.total),1);
+
+  return `
+  <div class="stat-grid">
+    <div class="stat-card stat-blue"><div class="stat-icon">${I.taka}</div><div class="stat-label">আজকের মোট বিক্রি</div><div class="stat-value">${cur(todayTotal)}</div></div>
+    <div class="stat-card stat-green"><div class="stat-icon">${I.trend}</div><div class="stat-label">আজকের লাভ</div><div class="stat-value">${cur(todayProfit)}</div></div>
+    <div class="stat-card stat-orange"><div class="stat-icon">${I.wallet}</div><div class="stat-label">মোট বাকি</div><div class="stat-value">${cur(totalDue)}</div></div>
+    <div class="stat-card stat-blue"><div class="stat-icon">${I.boxes}</div><div class="stat-label">মোট স্টকের মূল্য</div><div class="stat-value">${cur(stockValue)}</div></div>
+    <div class="stat-card stat-blue"><div class="stat-icon">${I.box}</div><div class="stat-label">মোট পণ্য</div><div class="stat-value">${state.products.length} টি</div></div>
+    <div class="stat-card stat-red"><div class="stat-icon">${I.alert}</div><div class="stat-label">কম স্টকের পণ্য</div><div class="stat-value">${lowStock.length} টি</div></div>
+    <div class="stat-card stat-green"><div class="stat-icon">${I.receipt}</div><div class="stat-label">আজকের বিক্রির সংখ্যা</div><div class="stat-value">${todaySales.length} টি</div></div>
+    <div class="stat-card stat-orange"><div class="stat-icon">${I.wallet}</div><div class="stat-label">আজকের বাকি বিক্রি</div><div class="stat-value">${cur(todayDueSales)}</div></div>
+  </div>
+
+  <div class="section-title">বিক্রয়ের সারসংক্ষেপ (গত ৭ দিন)</div>
+  <div class="card chart-wrap">
+    <div class="bars">
+      ${chartDays.map(c=>`
+        <div class="bar-col">
+          <div style="font-size:10px;color:var(--sky-dark);font-weight:700;">${c.total>0?Math.round(c.total/100)/10+'k':''}</div>
+          <div class="bar" style="height:${Math.max(6,(c.total/maxVal)*90)}px;"></div>
+          <div class="bar-day">${['র','সো','ম','বু','বৃ','শু','শ'][c.d.getDay()]}</div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div class="section-title">কম স্টক অ্যালার্ট <span class="link" onclick="go('stock')">সব দেখুন</span></div>
+  <div class="card">
+    ${lowStock.length===0?`<div class="empty-state" style="padding:16px;">${I.check}<p>সব পণ্যের স্টক ঠিক আছে</p></div>`:
+      lowStock.slice(0,4).map(p=>`
+      <div class="low-stock-item">
+        <div class="ls-icon">${I.alert}</div>
+        <div><div class="ls-name">${p.name}</div><div class="ls-sub">${categoryName(p.categoryId)} · সর্বনিম্ন ${p.minStock} ${p.unit}</div></div>
+        <div class="ls-badge">${p.stock} ${p.unit}</div>
+      </div>`).join('')}
+  </div>
+
+  <div class="section-title">দ্রুত অ্যাকশন</div>
+  <div class="fw-btn-row" style="margin-top:0;">
+    <button class="btn btn-primary btn-block" onclick="go('pos')">${I.cart} নতুন বিক্রি</button>
+    <button class="btn btn-outline btn-block" onclick="go('purchase')">${I.bag} নতুন ক্রয়</button>
+  </div>
+  `;
+}
+
+/* ============ POS ============ */
+function renderPOS(){
+  const cats = ['সব',...state.categories.map(c=>c.name)];
+  let products = state.products.filter(p=>{
+    const matchName = p.name.toLowerCase().includes(state.posSearch.toLowerCase()) || p.sku.toLowerCase().includes(state.posSearch.toLowerCase());
+    const matchCat = state.posCategory==='সব' || categoryName(p.categoryId)===state.posCategory;
+    return matchName && matchCat;
+  });
+  return `
+  <div class="search-wrap">${I.search}<input id="posSearchInput" value="${escapeHtml(state.posSearch)}" placeholder="পণ্য খুঁজুন বা বারকোড স্ক্যান করুন..." oninput="state.posSearch=this.value; renderPOSList();"></div>
+  <div class="chip-row" id="posCatChips">
+    ${cats.map(c=>`<div class="chip ${state.posCategory===c?'active':''}" onclick="state.posCategory='${escapeAttr(c)}'; renderPOSList(); renderPOSChips();">${c}</div>`).join('')}
+  </div>
+  <div class="product-grid" id="posGrid">${productCardsHTML(products)}</div>
+  ${state.cart.length ? `<div style="height:100px"></div>`:''}
+  `;
+}
+function productCardsHTML(products){
+  if(products.length===0) return `<div class="empty-state" style="grid-column:1/-1;">${I.search}<p>${state.products.length===0?'এখনো কোনো পণ্য যোগ করা হয়নি। স্টক পেজ থেকে পণ্য যোগ করুন।':'কোনো পণ্য পাওয়া যায়নি'}</p></div>`;
+  return products.map(p=>`
+    <div class="product-card ${p.stock<=0?'out':''}" onclick="addToCart('${p.id}')">
+      <div class="p-icon">${productEmoji(p)}</div>
+      <div class="p-name">${p.name}</div>
+      <div class="p-stock">স্টক: ${p.stock} ${p.unit}</div>
+      <div class="p-price">${cur(p.sellingPrice)}</div>
+    </div>`).join('');
+}
+function productEmoji(p){
+  const n=p.name;
+  if(n.includes('চাল')) return '🍚';
+  if(n.includes('তেল')) return '🛢️';
+  if(n.includes('ডাল')) return '🫘';
+  if(n.includes('চিনি')) return '🍬';
+  if(n.includes('লবণ')) return '🧂';
+  if(n.includes('চা')) return '🍵';
+  if(n.includes('কোকা')||n.includes('পানীয়')) return '🥤';
+  if(n.includes('বিস্কুট')) return '🍪';
+  if(n.includes('সাবান')) return '🧼';
+  if(n.includes('দুধ')) return '🥛';
+  if(n.includes('ডিম')) return '🥚';
+  if(n.includes('আটা')) return '🌾';
+  if(n.includes('কসমেটিক')||n.includes('প্রসাধন')) return '💄';
+  if(n.includes('কাগজ')||n.includes('খাতা')||n.includes('পেপার')) return '📒';
+  return '📦';
+}
+function renderPOSList(){
+  document.getElementById('posGrid').innerHTML = productCardsHTML(state.products.filter(p=>{
+    const matchName = p.name.toLowerCase().includes(state.posSearch.toLowerCase()) || p.sku.toLowerCase().includes(state.posSearch.toLowerCase());
+    const matchCat = state.posCategory==='সব' || categoryName(p.categoryId)===state.posCategory;
+    return matchName && matchCat;
+  }));
+}
+function renderPOSChips(){
+  const cats = ['সব',...state.categories.map(c=>c.name)];
+  document.getElementById('posCatChips').innerHTML = cats.map(c=>`<div class="chip ${state.posCategory===c?'active':''}" onclick="state.posCategory='${escapeAttr(c)}'; renderPOSList(); renderPOSChips();">${c}</div>`).join('');
+}
+
+function addToCart(pid){
+  const p = productById(pid);
+  if(!p || p.stock<=0){ showToast('এই পণ্যটি স্টকে নেই','error'); return; }
+  const line = state.cart.find(c=>c.productId===pid);
+  if(line){
+    if(line.qty+1>p.stock){ showToast('পর্যাপ্ত স্টক নেই','error'); return; }
+    line.qty++;
+  } else {
+    state.cart.push({productId:pid, name:p.name, price:p.sellingPrice, qty:1});
+  }
+  render();
+}
+function changeQty(pid,delta){
+  const line = state.cart.find(c=>c.productId===pid);
+  if(!line) return;
+  const p = productById(pid);
+  const newQty = line.qty+delta;
+  if(newQty<=0){ state.cart = state.cart.filter(c=>c.productId!==pid); }
+  else if(p && newQty>p.stock){ showToast('পর্যাপ্ত স্টক নেই','error'); return; }
+  else { line.qty = newQty; }
+  render();
+}
+function removeCartLine(pid){ state.cart = state.cart.filter(c=>c.productId!==pid); render(); }
+
+function cartSubtotal(){ return state.cart.reduce((a,c)=>a+c.price*c.qty,0); }
+function cartGrandTotal(){ return Math.max(0, cartSubtotal() - Number(state.cartDiscount||0)); }
+
+function renderCartBar(){
+  const count = state.cart.reduce((a,c)=>a+c.qty,0);
+  return `
+  <div class="cart-bar">
+    <div class="cart-bar-inner" onclick="openCartSheet()">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="background:rgba(255,255,255,0.25);width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;">${I.cart}</div>
+        <div><div style="font-size:12px;opacity:.9;">${count} টি পণ্য</div><div style="font-weight:700;font-family:'Baloo Da 2',sans-serif;">${cur(cartGrandTotal())}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;font-weight:600;font-size:13px;">কার্ট দেখুন ${I.right}</div>
+    </div>
+  </div>`;
+}
+
+function openCartSheet(){ state.modal='cart'; render(); }
+function closeCartSheet(){ state.modal=null; render(); }
+
+/* ============ CUSTOMERS ============ */
+function renderCustomers(){
+  const totalDue = state.customers.reduce((a,c)=>a+c.due,0);
+  let list = state.customers.filter(c=>c.name.toLowerCase().includes(state.customerSearch.toLowerCase()) || c.phone.includes(state.customerSearch));
+  return `
+  <div class="card" style="background:linear-gradient(135deg,var(--sky) 0%,var(--sky-dark) 100%);border:none;color:#fff;">
+    <div style="font-size:12px;opacity:.9;">সর্বমোট বাকি</div>
+    <div style="font-size:24px;font-weight:700;font-family:'Baloo Da 2',sans-serif;margin-top:2px;">${cur(totalDue)}</div>
+    <div style="font-size:11.5px;opacity:.85;margin-top:4px;">${state.customers.filter(c=>c.due>0).length} জন কাস্টমারের কাছে বাকি আছে</div>
+  </div>
+  <div class="search-wrap" style="margin-top:14px;">${I.search}<input value="${escapeHtml(state.customerSearch)}" placeholder="নাম বা মোবাইল নাম্বার খুঁজুন..." oninput="state.customerSearch=this.value; render();"></div>
+  <button class="btn btn-primary btn-block" style="margin-bottom:12px;" onclick="openModal('newCustomer')">${I.plus} নতুন কাস্টমার যোগ করুন</button>
+  <div class="card">
+    ${list.length===0? `<div class="empty-state">${I.users}<p>কোনো কাস্টমার পাওয়া যায়নি</p></div>` :
+      list.map(c=>`
+      <div class="list-row" onclick="openCustomerProfile('${c.id}')" style="cursor:pointer;">
+        <div class="avatar">${c.name.charAt(0)}</div>
+        <div style="flex:1;">
+          <div class="lr-title">${c.name}</div>
+          <div class="lr-sub">📞 ${c.phone}</div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-amount" style="color:${c.due>0?'var(--error)':'var(--success)'};">${cur(c.due)}</div>
+          <div class="tag ${c.due>0?'tag-red':'tag-green'}" style="margin-top:4px;">${c.due>0?'বাকি আছে':'ক্লিয়ার'}</div>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function openCustomerProfile(id){ state.activeCustomerId=id; go('customerProfile'); }
+
+function renderCustomerProfile(){
+  const c = customerById(state.activeCustomerId);
+  if(!c) return `<div class="empty-state">${I.info}<p>কাস্টমার পাওয়া যায়নি</p></div>`;
+  const txns = [
+    ...state.ledger.filter(l=>l.customerId===c.id).map(l=>({...l,kind:'ledger'})),
+  ].sort((a,b)=> new Date(b.date)-new Date(a.date));
+  const totalDueAdded = state.ledger.filter(l=>l.customerId===c.id && l.type==='due_added').reduce((a,l)=>a+l.amount,0);
+  const totalPaid = state.ledger.filter(l=>l.customerId===c.id && l.type==='payment').reduce((a,l)=>a+l.amount,0);
+  const custSales = state.sales.filter(s=>s.customerId===c.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  return `
+  <div class="card" style="text-align:center;padding:22px 16px;">
+    <div class="avatar" style="width:56px;height:56px;font-size:22px;margin:0 auto 10px;">${c.name.charAt(0)}</div>
+    <div style="font-family:'Baloo Da 2',sans-serif;font-size:17px;font-weight:700;">${c.name}</div>
+    <div style="font-size:12.5px;color:var(--text-soft);margin-top:2px;">📞 ${c.phone}</div>
+    <div style="font-size:26px;font-weight:700;color:${c.due>0?'var(--error)':'var(--success)'};margin-top:12px;font-family:'Baloo Da 2',sans-serif;">${cur(c.due)}</div>
+    <div style="font-size:11.5px;color:var(--text-soft);">বর্তমান বাকি</div>
+    <div class="fw-btn-row">
+      <button class="btn btn-success btn-block" onclick="openModal('collectPayment')">${I.taka} টাকা গ্রহণ</button>
+      <button class="btn btn-outline btn-block" onclick="openModal('addDue')">${I.plus} বাকি যোগ</button>
+    </div>
+  </div>
+
+  <div class="stat-grid" style="grid-template-columns:1fr 1fr;">
+    <div class="stat-card stat-orange"><div class="stat-label">মোট বাকি হয়েছে</div><div class="stat-value">${cur(totalDueAdded)}</div></div>
+    <div class="stat-card stat-green"><div class="stat-label">মোট পরিশোধ</div><div class="stat-value">${cur(totalPaid)}</div></div>
+  </div>
+
+  <div class="section-title">লেনদেনের ইতিহাস</div>
+  <div class="card">
+    ${txns.length===0?`<div class="empty-state">${I.history}<p>কোনো লেনদেন নেই</p></div>`:
+    txns.map(t=>`
+      <div class="list-row">
+        <div class="avatar" style="background:${t.type==='payment'?'var(--success-bg)':'var(--error-bg)'};color:${t.type==='payment'?'var(--success)':'var(--error)'};">${t.type==='payment'?I.taka:I.wallet}</div>
+        <div style="flex:1;">
+          <div class="lr-title">${t.type==='payment'?'টাকা পরিশোধ':(t.type==='adjustment'?'বাকি সমন্বয়':'বাকি যোগ')}</div>
+          <div class="lr-sub">${fmtDate(t.date)}${t.note?' · '+t.note:''}</div>
+        </div>
+        <div class="lr-amount" style="color:${t.type==='payment'?'var(--success)':'var(--error)'};">${t.type==='payment'?'-':'+'}${cur(t.amount)}</div>
+        <button class="icon-btn" style="background:var(--error-bg);color:var(--error);width:30px;height:30px;margin-left:2px;" onclick="event.stopPropagation(); deleteLedgerEntry('${t.id}')">${I.trash}</button>
+      </div>`).join('')}
+  </div>
+
+  ${custSales.length? `
+  <div class="section-title">ক্রয়কৃত ইনভয়েস</div>
+  <div class="card">
+    ${custSales.map(s=>`
+      <div class="list-row" style="cursor:pointer;" onclick="viewInvoice('${s.id}')">
+        <div class="avatar">${I.receipt}</div>
+        <div style="flex:1;"><div class="lr-title">${s.invoiceNo}</div><div class="lr-sub">${fmtDate(s.date)}</div></div>
+        <div class="lr-right"><div class="lr-amount">${cur(s.grandTotal)}</div><div class="tag ${s.due>0?'tag-red':'tag-green'}" style="margin-top:4px;">${s.due>0?'বাকি':'পরিশোধিত'}</div></div>
+      </div>`).join('')}
+  </div>`:''}
+  `;
+}
+
+/* ============ STOCK ============ */
+function renderStock(){
+  const cats = ['সব',...state.categories.map(c=>c.name)];
+  let products = state.products.filter(p=>{
+    const matchName = p.name.toLowerCase().includes(state.stockSearch.toLowerCase()) || p.sku.toLowerCase().includes(state.stockSearch.toLowerCase());
+    const matchCat = state.stockCategory==='সব' || categoryName(p.categoryId)===state.stockCategory;
+    const matchLow = !state.stockLowOnly || p.stock<=p.minStock;
+    return matchName && matchCat && matchLow;
+  });
+  const totalValue = state.products.reduce((a,p)=>a+p.stock*p.purchasePrice,0);
+  return `
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;">
+    <div><div style="font-size:11.5px;color:var(--text-soft);">মোট স্টক মূল্য</div><div style="font-size:19px;font-weight:700;font-family:'Baloo Da 2',sans-serif;color:var(--sky-dark);">${cur(totalValue)}</div></div>
+    <div style="text-align:right;"><div style="font-size:11.5px;color:var(--text-soft);">মোট পণ্য</div><div style="font-size:19px;font-weight:700;font-family:'Baloo Da 2',sans-serif;">${state.products.length}</div></div>
+  </div>
+  <div class="search-wrap" style="margin-top:14px;">${I.search}<input value="${escapeHtml(state.stockSearch)}" placeholder="পণ্য, SKU বা বারকোড খুঁজুন..." oninput="state.stockSearch=this.value; render();"></div>
+  <div class="chip-row">
+    ${cats.map(c=>`<div class="chip ${state.stockCategory===c?'active':''}" onclick="state.stockCategory='${escapeAttr(c)}'; render();">${c}</div>`).join('')}
+    <div class="chip ${state.stockLowOnly?'active':''}" onclick="state.stockLowOnly=!state.stockLowOnly; render();">⚠️ কম স্টক</div>
+  </div>
+  <div class="fw-btn-row" style="margin:6px 0 12px;">
+    <button class="btn btn-primary btn-block" onclick="openModal('addProduct')">${I.plus} নতুন পণ্য</button>
+    <button class="btn btn-outline btn-block" onclick="go('categories')">${I.layers} ক্যাটাগরি</button>
+  </div>
+  <div class="card">
+    ${products.length===0?`<div class="empty-state">${I.box}<p>${state.products.length===0?'এখনো কোনো পণ্য যোগ করা হয়নি':'কোনো পণ্য পাওয়া যায়নি'}</p></div>`:
+    products.map(p=>{
+      const low = p.stock<=p.minStock;
+      const out = p.stock<=0;
+      return `
+      <div class="list-row">
+        <div class="avatar" style="${out?'background:var(--error-bg);color:var(--error);':(low?'background:var(--warning-bg);color:var(--warning);':'')}">${productEmoji(p)}</div>
+        <div style="flex:1;">
+          <div class="lr-title">${p.name}</div>
+          <div class="lr-sub">${categoryName(p.categoryId)} · SKU: ${p.sku}</div>
+        </div>
+        <div class="lr-right">
+          <div class="lr-amount">${p.stock} ${p.unit}</div>
+          <div class="tag ${out?'tag-red':(low?'tag-orange':'tag-green')}" style="margin-top:4px;">${out?'স্টক শেষ':(low?'কম স্টক':'ঠিক আছে')}</div>
+        </div>
+        <button class="icon-btn" style="background:var(--sky-light);color:var(--sky-dark);width:32px;height:32px;" onclick="openModal('editProduct','${p.id}')">${I.edit}</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ============ CATEGORIES ============ */
+function renderCategories(){
+  return `
+  <button class="btn btn-primary btn-block" style="margin-bottom:12px;" onclick="openModal('newCategory')">${I.plus} নতুন ক্যাটাগরি</button>
+  <div class="card">
+    ${state.categories.length===0? `<div class="empty-state">${I.layers}<p>এখনো কোনো ক্যাটাগরি যোগ করা হয়নি</p></div>` :
+    state.categories.map(c=>{
+      const count = state.products.filter(p=>p.categoryId===c.id).length;
+      return `
+      <div class="list-row">
+        <div class="avatar">${I.tag}</div>
+        <div style="flex:1;"><div class="lr-title">${c.name}</div><div class="lr-sub">${count} টি পণ্য</div></div>
+        <button class="icon-btn" style="background:var(--sky-light);color:var(--sky-dark);width:32px;height:32px;" onclick="event.stopPropagation(); openModal('editCategory','${c.id}')">${I.edit}</button>
+        <button class="icon-btn" style="background:var(--error-bg);color:var(--error);width:32px;height:32px;" onclick="event.stopPropagation(); deleteCategory('${c.id}')">${I.trash}</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function deleteCategory(id){
+  if(state.products.some(p=>p.categoryId===id)){ showToast('এই ক্যাটাগরিতে পণ্য আছে, মুছা যাবে না','error'); return; }
+  state.categories = state.categories.filter(c=>c.id!==id);
+  showToast('ক্যাটাগরি মুছে ফেলা হয়েছে','success');
+  saveState();
+  render();
+}
+
+/* ============ PURCHASE ============ */
+function renderPurchase(){
+  const recent = state.purchases.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,10);
+  return `
+  <button class="btn btn-primary btn-block" style="margin-bottom:14px;" onclick="openModal('newPurchase')">${I.plus} নতুন ক্রয় যোগ করুন</button>
+  <div class="section-title">সাম্প্রতিক ক্রয়</div>
+  <div class="card">
+    ${recent.length===0?`<div class="empty-state">${I.bag}<p>এখনো কোনো ক্রয় করা হয়নি</p></div>`:
+    recent.map(pu=>`
+      <div class="list-row">
+        <div class="avatar">${I.bag}</div>
+        <div style="flex:1;"><div class="lr-title">${pu.supplier||'সাধারণ সাপ্লায়ার'}</div><div class="lr-sub">${fmtDate(pu.date)} · ${pu.items.length} পণ্য</div></div>
+        <div class="lr-right"><div class="lr-amount">${cur(pu.total)}</div><div class="tag ${pu.due>0?'tag-red':'tag-green'}" style="margin-top:4px;">${pu.due>0?'বাকি '+cur(pu.due):'পরিশোধিত'}</div></div>
+      </div>`).join('')}
+  </div>`;
+}
+
+/* ============ HISTORY ============ */
+function renderHistory(){
+  const types = ['সব','বিক্রি','ক্রয়','বাকি যোগ','বাকি পরিশোধ','স্টক সমন্বয়'];
+  const typeMap = {'সব':'all','বিক্রি':'sale','ক্রয়':'purchase','বাকি যোগ':'due_added','বাকি পরিশোধ':'payment','স্টক সমন্বয়':'stock_adjust'};
+
+  let items = state.history.slice();
+  items = items.filter(h=>{
+    if(state.historyFilter==='today') return isToday(h.date);
+    if(state.historyFilter==='yesterday') return isYesterday(h.date);
+    if(state.historyFilter==='week') return isThisWeek(h.date);
+    if(state.historyFilter==='month') return isThisMonth(h.date);
+    return true;
+  });
+  if(state.historyType!=='সব'){
+    items = items.filter(h=>h.type===typeMap[state.historyType]);
+  }
+  items.sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  const filters = [{k:'today',l:'আজ'},{k:'yesterday',l:'গতকাল'},{k:'week',l:'এই সপ্তাহ'},{k:'month',l:'এই মাস'},{k:'all',l:'সব সময়'}];
+
+  return `
+  <div class="chip-row">
+    ${filters.map(f=>`<div class="chip ${state.historyFilter===f.k?'active':''}" onclick="state.historyFilter='${f.k}'; render();">${f.l}</div>`).join('')}
+  </div>
+  <div class="chip-row">
+    ${types.map(t=>`<div class="chip ${state.historyType===t?'active':''}" onclick="state.historyType='${t}'; render();">${t}</div>`).join('')}
+  </div>
+  <div class="card">
+    ${items.length===0?`<div class="empty-state">${I.history}<p>কোনো লেনদেন পাওয়া যায়নি</p></div>`:
+    items.map(h=>{
+      const icons = {sale:I.receipt,purchase:I.bag,due_added:I.wallet,payment:I.taka,stock_adjust:I.boxes};
+      const colors = {sale:'var(--sky-dark)',purchase:'var(--warning)',due_added:'var(--error)',payment:'var(--success)',stock_adjust:'var(--sky-dark)'};
+      const bgs = {sale:'var(--sky-light)',purchase:'var(--warning-bg)',due_added:'var(--error-bg)',payment:'var(--success-bg)',stock_adjust:'var(--sky-light)'};
+      return `
+      <div class="list-row">
+        <div class="avatar" style="background:${bgs[h.type]||'var(--sky-light)'};color:${colors[h.type]||'var(--sky-dark)'};">${icons[h.type]||I.info}</div>
+        <div style="flex:1;"><div class="lr-title">${h.desc}</div><div class="lr-sub">${fmtDate(h.date)}</div></div>
+        <div class="lr-amount" style="color:${['payment'].includes(h.type)?'var(--success)':(['due_added','purchase'].includes(h.type)?'var(--error)':'var(--text)')};">${cur(h.amount)}</div>
+        <button class="icon-btn" style="background:var(--error-bg);color:var(--error);width:30px;height:30px;margin-left:2px;" onclick="deleteHistoryEntry('${h.id}')">${I.trash}</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ============ REPORTS ============ */
+function renderReports(){
+  const ranges={daily:'আজকের',weekly:'সাপ্তাহিক',monthly:'মাসিক'};
+  const filterFn = state.reportRange==='daily'?isToday:(state.reportRange==='weekly'?isThisWeek:isThisMonth);
+  const sales = state.sales.filter(s=>filterFn(s.date));
+  const purchases = state.purchases.filter(p=>filterFn(p.date));
+  const totalSales = sales.reduce((a,s)=>a+s.grandTotal,0);
+  const totalProfit = sales.reduce((a,s)=> a + s.items.reduce((pa,it)=>{
+    const cost = (typeof it.costTotal==='number') ? it.costTotal : ((productById(it.productId)?productById(it.productId).purchasePrice:0)*it.qty);
+    return pa + (it.price*it.qty - cost);
+  },0) - s.discount,0);
+  const totalPurchase = purchases.reduce((a,p)=>a+p.total,0);
+  const totalDue = state.customers.reduce((a,c)=>a+c.due,0);
+  const stockValue = state.products.reduce((a,p)=>a+p.stock*p.purchasePrice,0);
+
+  const qtyMap = {};
+  sales.forEach(s=>s.items.forEach(it=>{ qtyMap[it.productId]=(qtyMap[it.productId]||0)+it.qty; }));
+  const bestSelling = Object.entries(qtyMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([pid,qty])=>({p:productById(pid),qty})).filter(x=>x.p);
+  const lowStockProducts = state.products.filter(p=>p.stock<=p.minStock).sort((a,b)=>a.stock-b.stock);
+
+  return `
+  <div class="chip-row">
+    ${Object.entries(ranges).map(([k,l])=>`<div class="chip ${state.reportRange===k?'active':''}" onclick="state.reportRange='${k}'; render();">${l}</div>`).join('')}
+  </div>
+  <div class="card">
+    <div class="report-stat"><div class="rs-label">${ranges[state.reportRange]} বিক্রয়</div><div class="rs-value" style="color:var(--sky-dark);">${cur(totalSales)}</div></div>
+    <div class="report-stat"><div class="rs-label">লাভ রিপোর্ট</div><div class="rs-value" style="color:var(--success);">${cur(totalProfit)}</div></div>
+    <div class="report-stat"><div class="rs-label">ক্রয় রিপোর্ট</div><div class="rs-value" style="color:var(--warning);">${cur(totalPurchase)}</div></div>
+    <div class="report-stat"><div class="rs-label">বাকি রিপোর্ট (সর্বমোট)</div><div class="rs-value" style="color:var(--error);">${cur(totalDue)}</div></div>
+    <div class="report-stat"><div class="rs-label">স্টক রিপোর্ট (মূল্য)</div><div class="rs-value">${cur(stockValue)}</div></div>
+    <div class="report-stat"><div class="rs-label">মোট বিক্রয় সংখ্যা</div><div class="rs-value">${sales.length} টি</div></div>
+  </div>
+
+  <div class="section-title">🏆 বেস্ট সেলিং প্রোডাক্ট</div>
+  <div class="card">
+    ${bestSelling.length===0?`<div class="empty-state">${I.chart}<p>এই সময়ে কোনো বিক্রয় নেই</p></div>`:
+    bestSelling.map((b,i)=>`
+      <div class="list-row">
+        <div class="avatar">${i+1}</div>
+        <div style="flex:1;"><div class="lr-title">${b.p.name}</div><div class="lr-sub">${categoryName(b.p.categoryId)}</div></div>
+        <div class="lr-amount">${b.qty} ${b.p.unit}</div>
+      </div>`).join('')}
+  </div>
+
+  <div class="section-title">⚠️ কম স্টক পণ্য</div>
+  <div class="card">
+    ${lowStockProducts.length===0?`<div class="empty-state">${I.check}<p>সব পণ্যের স্টক পর্যাপ্ত</p></div>`:
+    lowStockProducts.map(p=>`
+      <div class="list-row">
+        <div class="avatar" style="background:var(--error-bg);color:var(--error);">${I.alert}</div>
+        <div style="flex:1;"><div class="lr-title">${p.name}</div><div class="lr-sub">সর্বনিম্ন: ${p.minStock} ${p.unit}</div></div>
+        <div class="tag tag-red">${p.stock} ${p.unit}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+/* ============ NOTIFICATIONS ============ */
+function renderNotifications(){
+  const hadUnread = state.notifications.some(n=>!n.read);
+  state.notifications.forEach(n=>n.read=true);
+  if(hadUnread) saveState();
+  const icons = {low_stock:I.alert,out_stock:I.box,due_payment:I.taka,transaction:I.receipt};
+  const colors = {low_stock:'var(--warning)',out_stock:'var(--error)',due_payment:'var(--success)',transaction:'var(--sky-dark)'};
+  const bgs = {low_stock:'var(--warning-bg)',out_stock:'var(--error-bg)',due_payment:'var(--success-bg)',transaction:'var(--sky-light)'};
+  return `
+  <div class="card">
+    ${state.notifications.length===0?`<div class="empty-state">${I.bell}<p>কোনো নোটিফিকেশন নেই</p></div>`:
+    state.notifications.map(n=>`
+      <div class="notif-item">
+        <div class="ni-icon" style="background:${bgs[n.type]||'var(--sky-light)'};color:${colors[n.type]||'var(--sky-dark)'};">${icons[n.type]||I.info}</div>
+        <div style="flex:1;"><div class="ni-text">${n.message}</div><div class="ni-time">${fmtDate(n.date)}</div></div>
+      </div>`).join('')}
+  </div>`;
+}
+
+/* ============ SETTINGS ============ */
+function renderSettings(){
+  const s = state.settings;
+  return `
+  <div class="card" style="text-align:center;padding:22px;">
+    <div style="width:64px;height:64px;border-radius:18px;background:var(--sky-light);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:28px;">🏪</div>
+    <div style="font-family:'Baloo Da 2',sans-serif;font-size:16px;font-weight:700;">${s.shopName}</div>
+    <div style="font-size:12px;color:var(--text-soft);margin-top:2px;">${s.address||'ঠিকানা যোগ করা হয়নি'}</div>
+    <div style="font-size:11.5px;color:var(--text-soft);margin-top:6px;">🔑 ${currentUser?currentUser.email:''}</div>
+  </div>
+
+  <div class="section-title">দোকানের তথ্য</div>
+  <div class="card">
+    <div class="field"><label>দোকানের নাম</label><input id="set_shopName" value="${escapeHtml(s.shopName)}"></div>
+    <div class="field"><label>ঠিকানা</label><input id="set_address" value="${escapeHtml(s.address)}"></div>
+    <div class="field"><label>ফোন নাম্বার</label><input id="set_phone" value="${escapeHtml(s.phone)}"></div>
+    <div class="field-row">
+      <div class="field"><label>কারেন্সি</label><input id="set_currency" value="${escapeHtml(s.currency)}"></div>
+      <div class="field"><label>ইনভয়েস প্রিফিক্স</label><input id="set_prefix" value="${escapeHtml(s.invoicePrefix)}"></div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="saveSettings()">${I.check} সেভ করুন</button>
+  </div>
+
+  <div class="section-title">ডেটা</div>
+  <div class="card">
+    <div class="list-row"><div class="avatar">${I.download}</div><div style="flex:1;"><div class="lr-title">ব্যাকআপ / এক্সপোর্ট ডেটা</div><div class="lr-sub">সব তথ্য সংরক্ষণ করুন</div></div><button class="btn btn-ghost btn-sm" onclick="showToast('ব্যাকআপ ফাইল তৈরি হচ্ছে...','success')">এক্সপোর্ট</button></div>
+    <div class="list-row"><div class="avatar">${I.upload}</div><div style="flex:1;"><div class="lr-title">রিস্টোর ডেটা</div><div class="lr-sub">আগের ব্যাকআপ থেকে ফিরিয়ে আনুন</div></div><button class="btn btn-ghost btn-sm" onclick="showToast('ব্যাকআপ ফাইল নির্বাচন করুন','default')">রিস্টোর</button></div>
+  </div>
+
+  <div class="section-title">একাউন্ট</div>
+  <div class="card">
+    <div class="list-row" style="cursor:pointer;" onclick="logout()">
+      <div class="avatar" style="background:var(--error-bg);color:var(--error);">${I.logout}</div>
+      <div style="flex:1;"><div class="lr-title">লগআউট</div><div class="lr-sub">এই ডিভাইস থেকে সাইন আউট করুন</div></div>
+    </div>
+  </div>
+
+  <div class="section-title">অ্যাপ সম্পর্কে</div>
+  <div class="card" style="text-align:center;padding:18px;">
+    <div style="font-family:'Baloo Da 2',sans-serif;font-weight:700;color:var(--sky-dark);">Smart Khata POS</div>
+    <div style="font-size:11.5px;color:var(--text-soft);margin-top:4px;">সংস্করণ ১.০.০ · আপনার দোকান, আপনার হিসাব — সবকিছু এক অ্যাপে।</div>
+  </div>
+  `;
+}
+function saveSettings(){
+  state.settings.shopName = document.getElementById('set_shopName').value || state.settings.shopName;
+  state.settings.address = document.getElementById('set_address').value;
+  state.settings.phone = document.getElementById('set_phone').value;
+  state.settings.currency = document.getElementById('set_currency').value || '৳';
+  state.settings.invoicePrefix = document.getElementById('set_prefix').value || 'INV';
+  saveState();
+  showToast('সেটিংস সংরক্ষণ করা হয়েছে','success');
+  render();
+}
+
+/* ============ MODALS ============ */
+function openModal(name,arg){ state.modal=name; state.modalArg=arg; render(); }
+function closeModal(){ state.modal=null; state.modalArg=null; render(); }
+
+function modalHTML(){
+  if(!state.modal) return '';
+  const m = state.modal;
+  let inner = '';
+  if(m==='cart') inner = cartModalHTML();
+  else if(m==='newCustomerQuick' || m==='newCustomer') inner = customerFormModal();
+  else if(m==='collectPayment') inner = collectPaymentModal();
+  else if(m==='addDue') inner = addDueModal();
+  else if(m==='addProduct' || m==='editProduct') inner = productFormModal();
+  else if(m==='newCategory' || m==='editCategory') inner = categoryFormModal();
+  else if(m==='newPurchase') inner = purchaseFormModal();
+  else if(m==='invoice') inner = invoiceModal();
+  else if(m==='checkout') inner = checkoutModal();
+  const isCenter = ['invoice'].includes(m);
+  return `<div class="overlay ${isCenter?'center':''}" onclick="if(event.target===this) closeModal()"><div class="sheet">${inner}</div></div>`;
+}
+
+/* --- Cart modal --- */
+function cartModalHTML(){
+  return `
+  <div class="sheet-handle"></div>
+  <div class="sheet-head"><h3>কার্ট</h3><button class="close-x" onclick="closeModal()">${I.close}</button></div>
+  <div id="cartLines">
+    ${state.cart.length===0?`<div class="empty-state">${I.cart}<p>কার্ট খালি আছে</p></div>`:
+    state.cart.map(c=>`
+      <div class="cart-line-item">
+        <div class="cli-info"><div class="cli-name">${c.name}</div><div class="cli-price">${cur(c.price)} / পিস</div></div>
+        <div class="qty-ctrl">
+          <button onclick="changeQty('${c.productId}',-1); refreshCartModal();">${I.minus}</button>
+          <span>${c.qty}</span>
+          <button onclick="changeQty('${c.productId}',1); refreshCartModal();">${I.plus}</button>
+        </div>
+        <div class="cli-total">${cur(c.price*c.qty)}</div>
+      </div>`).join('')}
+  </div>
+  ${state.cart.length? `
+  <div class="field" style="margin-top:12px;">
+    <label>ডিসকাউন্ট (${state.settings.currency})</label>
+    <input type="number" min="0" value="${state.cartDiscount}" oninput="state.cartDiscount=Number(this.value)||0; refreshCartModal();">
+  </div>
+  <div class="summary-row"><span>সাবটোটাল</span><span>${cur(cartSubtotal())}</span></div>
+  <div class="summary-row"><span>ডিসকাউন্ট</span><span>-${cur(state.cartDiscount)}</span></div>
+  <div class="summary-row total"><span>গ্র্যান্ড টোটাল</span><span>${cur(cartGrandTotal())}</span></div>
+  <button class="btn btn-primary btn-block" style="margin-top:14px;" onclick="openModal('checkout')">চেকআউট করুন</button>
+  `:''}
+  `;
+}
+function refreshCartModal(){
+  if(state.modal==='cart'){
+    document.querySelector('.sheet').innerHTML = cartModalHTML();
+  }
+}
+
+/* --- Checkout modal --- */
+function checkoutModal(){
+  const methods = ['ক্যাশ','bKash','Nagad','Card','অন্যান্য'];
+  return `
+  <div class="sheet-handle"></div>
+  <div class="sheet-head"><h3>চেকআউট</h3><button class="close-x" onclick="closeModal()">${I.close}</button></div>
+  <div class="field">
+    <label>কাস্টমার</label>
+    <select id="checkoutCustomer" onchange="state.cartCustomerId=this.value;">
+      ${state.customers.map(c=>`<option value="${c.id}" ${state.cartCustomerId===c.id?'selected':(!state.cartCustomerId && c.id==='cu4'?'selected':'')}>${c.name}</option>`).join('')}
+    </select>
+  </div>
+  <button class="btn btn-ghost btn-block" style="margin-bottom:14px;" onclick="openModal('newCustomer')">${I.plus} নতুন কাস্টমার তৈরি করুন</button>
+
+  <div class="summary-row"><span>সাবটোটাল</span><span>${cur(cartSubtotal())}</span></div>
+  <div class="summary-row"><span>ডিসকাউন্ট</span><span>-${cur(state.cartDiscount)}</span></div>
+  <div class="summary-row total"><span>গ্র্যান্ড টোটাল</span><span>${cur(cartGrandTotal())}</span></div>
+
+  <div class="field" style="margin-top:12px;">
+    <label>পেমেন্ট মেথড</label>
+    <div class="pay-methods">
+      ${methods.map(mm=>`<div class="pay-method ${state.payMethod===mm?'active':''}" onclick="state.payMethod='${mm}'; refreshCheckout();">${mm}</div>`).join('')}
+    </div>
+  </div>
+
+  <div class="field">
+    <label>পরিশোধিত পরিমাণ</label>
+    <input type="number" id="paidAmountInput" min="0" value="${state.paidAmount||cartGrandTotal()}" oninput="state.paidAmount=Number(this.value)||0; refreshCheckoutDue();">
+  </div>
+  <div class="summary-row" id="dueRow"><span>বাকি (Due)</span><span style="font-weight:700;color:var(--error);">${cur(Math.max(0,cartGrandTotal()-(state.paidAmount||cartGrandTotal())))}</span></div>
+
+  <button class="btn btn-success btn-block" style="margin-top:14px;" onclick="completeSale()">${I.check} বিক্রি সম্পন্ন করুন</button>
+  `;
+}
+function refreshCheckout(){ if(state.modal==='checkout'){ document.querySelector('.sheet').innerHTML = checkoutModal(); } }
+function refreshCheckoutDue(){
+  const due = Math.max(0,cartGrandTotal()-(state.paidAmount||0));
+  const row = document.getElementById('dueRow');
+  if(row) row.innerHTML = `<span>বাকি (Due)</span><span style="font-weight:700;color:var(--error);">${cur(due)}</span>`;
+}
+
+function completeSale(){
+  if(state.cart.length===0){ showToast('কার্ট খালি আছে','error'); return; }
+  const custSel = document.getElementById('checkoutCustomer');
+  const customerId = custSel ? custSel.value : (state.cartCustomerId||'cu4');
+  const paid = Number(document.getElementById('paidAmountInput')?.value ?? state.paidAmount) || 0;
+  const grandTotal = cartGrandTotal();
+  const due = Math.max(0, grandTotal-paid);
+
+  const invoiceNo = state.settings.invoicePrefix+'-'+String(state.sales.length+1001);
+
+  const saleItems = state.cart.map(c=>{
+    const p = productById(c.productId);
+    let costTotal=0, costPerUnit=0;
+    if(p){
+      const res = consumeStockFIFO(p,c.qty);
+      costTotal = res.totalCost;
+      costPerUnit = res.avgCost;
+      checkStockNotify(p);
+    }
+    return {productId:c.productId,name:c.name,qty:c.qty,price:c.price,costTotal,costPerUnit};
+  });
+
+  const sale = {
+    id:newId('s'), invoiceNo, date:new Date().toISOString(), customerId,
+    items: saleItems,
+    subtotal: cartSubtotal(), discount: Number(state.cartDiscount||0), grandTotal, paid, due,
+    paymentMethod: state.payMethod,
+  };
+  state.sales.push(sale);
+
+  if(due>0){
+    const cust = customerById(customerId);
+    if(cust){ cust.due += due; }
+    state.ledger.unshift({id:newId('l'),customerId,type:'due_added',amount:due,date:sale.date,note:'ইনভয়েস '+invoiceNo,refId:sale.id});
+    addNotification('due_payment', (cust?cust.name:'কাস্টমার')+' - নতুন বাকি যোগ হয়েছে '+cur(due));
+  }
+  addHistory('sale', 'বিক্রয় সম্পন্ন — '+invoiceNo, grandTotal, sale.id);
+
+  state.cart = []; state.cartDiscount=0; state.paidAmount=0; state.cartCustomerId=null; state.payMethod='ক্যাশ';
+  state.lastInvoiceId = sale.id;
+  state.modal='invoice'; state.modalArg=sale.id;
+  saveState();
+  render();
+  showToast('বিক্রি সফলভাবে সম্পন্ন হয়েছে!','success');
+}
+
+function viewInvoice(saleId){ state.modal='invoice'; state.modalArg=saleId; render(); }
+
+function invoiceModal(){
+  const sale = state.sales.find(s=>s.id===state.modalArg);
+  if(!sale) return `<div class="empty-state">${I.info}<p>ইনভয়েস পাওয়া যায়নি</p></div>`;
+  const cust = customerById(sale.customerId);
+  return `
+  <div class="sheet-head"><h3>ইনভয়েস</h3><button class="close-x" onclick="closeModal()">${I.close}</button></div>
+  <div class="invoice-box">
+    <div class="invoice-head">
+      <div class="invoice-shop">🏪 ${state.settings.shopName}</div>
+      <div class="invoice-meta">${state.settings.address}<br>📞 ${state.settings.phone}</div>
+    </div>
+    <div class="invoice-meta">
+      ইনভয়েস নং: <strong>${sale.invoiceNo}</strong><br>
+      তারিখ: ${fmtDate(sale.date)}<br>
+      কাস্টমার: ${cust?cust.name:'-'}
+    </div>
+    <table class="invoice-table">
+      <tr><th>পণ্য</th><th>পরিমাণ</th><th>দাম</th><th>মোট</th></tr>
+      ${sale.items.map(it=>`<tr><td>${it.name}</td><td>${it.qty}</td><td>${cur(it.price)}</td><td>${cur(it.qty*it.price)}</td></tr>`).join('')}
+    </table>
+    <div class="summary-row"><span>সাবটোটাল</span><span>${cur(sale.subtotal)}</span></div>
+    <div class="summary-row"><span>ডিসকাউন্ট</span><span>-${cur(sale.discount)}</span></div>
+    <div class="summary-row total"><span>গ্র্যান্ড টোটাল</span><span>${cur(sale.grandTotal)}</span></div>
+    <div class="summary-row"><span>পরিশোধিত (${sale.paymentMethod})</span><span>${cur(sale.paid)}</span></div>
+    <div class="summary-row"><span>বাকি</span><span style="color:${sale.due>0?'var(--error)':'var(--success)'};font-weight:700;">${cur(sale.due)}</span></div>
+  </div>
+  <div class="fw-btn-row">
+    <button class="btn btn-outline btn-block" onclick="showToast('প্রিন্ট প্রিভিউ খোলা হচ্ছে...','default')">${I.printer} প্রিন্ট</button>
+    <button class="btn btn-primary btn-block" onclick="showToast('শেয়ার লিংক তৈরি হয়েছে','success')">${I.share} শেয়ার</button>
+  </div>
+  <button class="btn btn-ghost btn-block" style="margin-top:10px;" onclick="closeModal()">বন্ধ করুন</button>
+  `;
+}
+
+/* --- Customer form modal --- */
+function customerFormModal(){
+  return `
+  <div class="sheet-handle"></div>
+  <div class="sheet-head"><h3>নতুন কাস্টমার</h3><button class="close-x" onclick="closeModal()">${I.close}</button></div>
+  <div class="field"><label>নাম *</label><input id="nc_name" placeholder="কাস্টমারের নাম"></div>
+  <div class="field"><label>মোবাইল নাম্বার</label><input id="nc_phone" placeholder="01XXXXXXXXX"></div>
+  <div class="field"><label>শুরুর বাকি (ঐচ্ছিক)</label><input id="nc_due" type="number" min="0" value="0"></div>
+  <button class="btn btn-primary btn-block" onclick="saveCustomer()">${I.check} সংরক্ষণ করুন</button>
+  `;
+}
+function saveCustomer(){
+  const name = document.getElementById('nc_name').value.trim();
+  if(!name){ showToast('নাম দিতে হবে','error'); return; }
+  const phone = document.getElementById('nc_phone').value.trim()||'-';
+  const due = Number(document.getElementById('nc_due').value)||0;
+  const c = {id:newId('cu'),name,phone,due};
+  state.customers.push(c);
+  if(due>0){
+    const ledgerEntry = {id:newId('l'),customerId:c.id,type:'due_added',amount:due,date:new Date().toISOString(),note:'প্রাথমিক বাকি',refId:null};
+    state.ledger.unshift(ledgerEntry);
+    addHistory('due_added',name+' — প্রাথমিক বাকি যোগ হয়েছে',due,ledgerEntry.id);
+  }
+  state.cartCustomerId = c.id;
+  saveState();
+  showToast('কাস্টমার যোগ করা হয়েছে','success');
+  closeModal();
+  if(state.view==='pos' && state.cart.length){ openModal('checkout'); }
+}
+
+/* --- Collect payment / add due modals --- */
+function collectPaymentModal(){
+  const c = customerById(state.activeCustomerId);
+  return `
+  <div class="sheet-handle"></div>
+  <div class="sheet-head"><h3>টাকা গ্রহণ</h3><button class="close-x" onclick="closeModal()">${I.close}</button></div>
+  <div class="field"><label>কাস্টমার</label><input value="${c?c.name:''}" disabled></div>
+  <div class="field"><label>বর্তমান বাকি</label><input value="${cur(c?c.due:0)}" disabled></div>
+  <div class="field"><label>পরিশোধের পরিমাণ *</label><input id="pay_amount" type="number" min="1" placeholder="পরিমাণ লিখুন"></div>
+  <div class="field"><label>পেমেন্ট মেথড</label>
+    <select id="pay_method"><option>ক্যাশ</option><option>bKash</option><option>Nagad</option><option>Card</option></select>
+  </div>
+  <button class="btn btn-success btn-block" onclick="collectPayment()">${I.check} পেমেন্ট গ্রহণ করুন</button>
+  `;
+}
+function collectPayment(){
+  const c = customerById(state.activeCustomerId);
+  const amt = Number(document.getElementById('pay_amount').value)||0;
+  if(amt<=0){ showToast('সঠিক পরিমাণ লিখুন','error'); return; }
+  const method = document.getElementById('pay_method').value;
+  c.due = Math.max(0, c.due-amt);
+  const ledgerEntry = {id:newId('l'),customerId:c.id,type:'payment',amount:amt,date:new Date().toISOString(),note:method+' এর মাধ্যমে',refId:null};
+  state.ledger.unshift(ledgerEntry);
+  addHistory('payment', c.name+' — টাকা পরিশোধ করেছেন ('+method+')', amt, ledgerEntry.id);
+  addNotification('due_payment', c.name+' পরিশোধ করেছেন '+cur(amt));
+  saveState();
+  showToast('পেমেন্ট গ্রহণ করা হয়েছে','success');
+  closeModal();
+}
+function addDueModal(){
+  const c = customerById(state.activeCustomerId);
+  return `
+  <div class="sheet-handle"></div>
+  <div class="sheet-head"><h3>বাকি যোগ করুন</h3><button class="close-x" onclick="closeModal()">${I.close}</button></div>
+  <div class="field"><label>কাস্টমার</label><input value="${c?c.name:''}" disabled></div>
+  <div class="field"><label>বাকির পরিমাণ *</label><input id="due_amount" type="number" min="1" placeholder="পরিমাণ লিখুন"></div>
+  <div class="field"><label>নোট</label><input id="due_note" placeholder="কারণ (ঐচ্ছিক)"></div>
+  <button class="btn btn-primary btn-block" onclick="addDueManual()">${I.check} যোগ করুন</button>
+  `;
+}
+function addDueManual(){
+  const c = customerById(state.activeCustomerId);
+  const amt = Number(document.getElementById('due_amount').value)||0;
+  if(amt<=0){ showToast('সঠিক পরিমাণ লিখুন','error'); return; }
+  const note = document.getElementById('due_note').value.trim();
+  c.due += amt;
+  const ledgerEntry = {id:newId('l'),customerId:c.id,type:'due_added',amount:amt,date:new Date().toISOString(),note:note||'ম্যানুয়াল বাকি',refId:null};
+  state.ledger.unshift(ledgerEntry);
+  addHistory('due_added', c.name+' — বাকি যোগ হয়েছে', amt, ledgerEntry.id);
+  saveState();
+  showToast('বাকি যোগ করা হয়েছে','success');
+  closeModal();
+}
+
+/* --- Delete history / ledger entries (owner-editable log) --- */
+function deleteLedgerEntry(lid){
+  const l = state.ledger.find(x=>x.id===lid);
+  if(!l) return;
+  if(!confirm('এই লেনদেনটি মুছে ফেলতে চান? এতে কাস্টমারের বাকির পরিমাণ স্বয়ংক্রিয়ভাবে সমন্বয় হবে।')) return;
+  const c = customerById(l.customerId);
+  if(c){
+    if(l.type==='due_added') c.due = Math.max(0, c.due-l.amount);
+    else if(l.type==='payment') c.due = c.due + l.amount;
+  }
+  state.ledger = state.ledger.filter(x=>x.id!==lid);
+  state.history = state.history.filter(h=>h.refId!==lid);
+  saveState();
+  showToast('লেনদেন মুছে ফেলা হয়েছে','success');
+  render();
+}
+function deleteHistoryEntry(hid){
+  const h = state.history.find(x=>x.id===hid);
+  if(!h) return;
+  if(h.type==='due_added' || h.type==='payment'){
+    if(h.refId && state.ledger.some(l=>l.id===h.refId)){ deleteLedgerEntry(h.refId); return; }
+    if(!confirm('এই হিস্ট্রি এন্ট্রিটি মুছে ফেলতে চান?')) return;
+    state.history = state.history.filter(x=>x.id!==hid);
+    saveState(); render(); showToast('মুছে ফেলা হয়েছে','success');
+    return;
+  }
+  if(h.type==='sale'){
+    if(!confirm('এই বিক্রয় হিস্ট্রি লগ মুছে ফেললে শুধু তালিকা থেকে সরে যাবে — স্টক ও কাস্টমারের বাকি এতে পরিবর্তন হবে না। তবুও কি মুছবেন?')) return;
+    state.history = state.history.filter(x=>x.id!==hid);
+    saveState(); render(); showToast('হিস্ট্রি লগ মুছে ফেলা হয়েছে','success');
+    return;
+  }
+  if(h.type==='purchase'){
+    if(!confirm('এই ক্রয় হিস্ট্রি লগ মুছে ফেললে শুধু তালিকা থেকে সরে যাবে — স্টক এতে পরিবর্তন হবে না। তবুও কি মুছবেন?')) return;
+    state.history = state.history.filter(x=>x.id!==hid);
+    saveState(); render(); showToast('হিস্ট্রি লগ মুছে ফেলা হয়েছে','success');
+    return;
+  }
+  if(!confirm('এই হিস্ট্রি এন্ট্রিটি মুছে ফেলতে চান?')) return;
+  state.history = state.history.filter(x=>x.id!==hid);
+  saveState(); render(); showToast('মুছে ফেলা হয়েছে','success');
+}
+
+/* --- Product form modal --- */
+function productFormModal(){
+  const editing = state.modal==='editProduct';
+  const p = editing ? productById(state.modalArg) : null;
+  return `
+  <div class="sheet-handle"></div>
+  <div class="sheet-head"><h3>${editing?'পণ্য এডিট করুন':'নতুন পণ্য যোগ করুন'}</h3><button class="close-x" onclick="closeModal()">${I.close}</button></div>
+  <div class="field"><label>পণ্যের নাম *</label><input id="pf_name" value="${p?escapeHtml(p.name):''}" placeholder="পণ্যের নাম"></div>
+  <div class="field"><label>ক্যাটাগরি</label>
+    <select id="pf_cat">${state.categories.length? state.categories.map(c=>`<option value="${c.id}" ${p&&p.categoryId===c.id?'selected':''}>${c.name}</option>`).join('') : '<option value="">কোনো ক্যাটাগরি নেই — আগে যোগ করুন</option>'}</select>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>SKU</label><input id="pf_sku" value="${p?escapeHtml(p.sku):''}" placeholder="SKU-001"></div>
+    <div class="field"><label>ইউনিট</label><input id="pf_unit" value="${p?escapeHtml(p.unit):'পিস'}" placeholder="কেজি/পিস/বোতল"></div>
+  </div>
+  <div class="field"><label>বারকোড ${I.scan}</label><input id="pf_barcode" value="${p?escapeHtml(p.barcode):''}" placeholder="বারকোড স্ক্যান বা লিখুন"></div>
+  <div class="field-row">
+    <div class="field"><label>${editing?'সর্বশেষ ক্রয় মূল্য':'ক্রয় মূল্য'} *</label><input id="pf_pp" type="number" min="0" value="${p?p.purchasePrice:''}"></div>
+    <div class="field"><label>বিক্রয় মূল্য * <span style="font-weight:400;">(সব স্টকে প্রযোজ্য)</span></label><input id="pf_sp" type="number" min="0" value="${p?p.sellingPrice:''}"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>বর্তমান স্টক ${editing?'(স্বয়ংক্রিয়)':''}</label><input id="pf_stock" type="number" min="0" value="${p?p.stock:0}" ${editing?'disabled':''}></div>
+    <div class="field"><label>সর্বনিম্ন স্টক</label><input id="pf_min" type="number" min="0" value="${p?p.minStock:5}"></div>
+  </div>
+  ${editing?`<div class="field"><label>স্টক সমন্বয় (+/-) — যেমন নষ্ট/হারানো পণ্য বাদ দিতে -২ লিখুন, নতুন যোগ করতে +৩ লিখুন (উপরের "সর্বশেষ ক্রয় মূল্য" দিয়ে গণনা হবে)</label><input id="pf_adjust" type="number" value="0"></div>`:''}
+  <div class="fw-btn-row">
+    ${editing?`<button class="btn btn-outline btn-block" style="color:var(--error);border-color:var(--error);" onclick="deleteProduct('${p.id}')">${I.trash} মুছুন</button>`:''}
+    <button class="btn btn-primary btn-block" onclick="saveProduct(${editing?`'${p.id}'`:'null'})">${I.check} সংরক্ষণ করুন</button>
+  </div>
+  `;
+}
+function saveProduct(pid){
+  const name = document.getElementById('pf_name').value.trim();
+  if(!name){ showToast('পণ্যের নাম দিন','error'); return; }
+  const categoryId = document.getElementById('pf_cat').value;
+  const sku = document.getElementById('pf_sku').value.trim()||('SKU-'+(uid++));
+  const unit = document.getElementById('pf_unit').value.trim()||'পিস';
+  const barcode = document.getElementById('pf_barcode').value.trim();
+  const purchasePrice = Number(document.getElementById('pf_pp').value)||0;
+  const sellingPrice = Number(document.getElementById('pf_sp').value)||0;
+  const minStock = Number(document.getElementById('pf_min').value)||0;
+
+  if(pid){
+    const p = productById(pid);
+    ensureBatches(p);
+    p.name=name; p.categoryId=categoryId; p.sku=sku; p.unit=unit; p.barcode=barcode; p.sellingPrice=sellingPrice; p.minStock=minStock;
+    const adjustEl = document.getElementById('pf_adjust');
+    const adjust = adjustEl? (Number(adjustEl.value)||0) : 0;
+    if(adjust>0){ addStockBatch(p,adjust,purchasePrice,new Date().toISOString()); addHistory('stock_adjust', p.name+' — স্টক সমন্বয় (+'+adjust+')', adjust*purchasePrice, p.id); }
+    else if(adjust<0){ const take=Math.min(-adjust,p.stock); consumeStockFIFO(p,take); addHistory('stock_adjust', p.name+' — স্টক সমন্বয় (-'+take+')', take*purchasePrice, p.id); p.purchasePrice = purchasePrice; }
+    else { p.purchasePrice = purchasePrice; }
+    checkStockNotify(p);
+    showToast('পণ্য আপডেট করা হয়েছে','success');
+  } else {
+    const stock = Number(document.getElementById('pf_stock').value)||0;
+    const np = {id:newId('p'),name,categoryId,sku,unit,barcode,purchasePrice,sellingPrice,stock:0,minStock,batches:[]};
+    if(stock>0) addStockBatch(np,stock,purchasePrice,new Date().toISOString());
+    state.products.push(np);
+    showToast('নতুন পণ্য যোগ করা হয়েছে','success');
+  }
+  saveState();
+  closeModal();
+}
+function deleteProduct(pid){
+  state.products = state.products.filter(p=>p.id!==pid);
+  saveState();
+  showToast('পণ্য মুছে ফেলা হয়েছে','success');
+  closeModal();
+}
+
+/* --- Category form modal --- */
+function categoryFormModal(){
+  const editing = state.modal==='editCategory';
+  const c = editing ? state.categories.find(x=>x.id===state.modalArg) : null;
+  return `
+  <div class="sheet-handle"></div>
+  <div class="sheet-head"><h3>${editing?'ক্যাটাগরি এডিট':'নতুন ক্যাটাগরি'}</h3><button class="close-x" onclick="closeModal()">${I.close}</button></div>
+  <div class="field"><label>ক্যাটাগরির নাম *</label><input id="cat_name" value="${c?escapeHtml(c.name):''}" placeholder="যেমন: প্রসাধনী"></div>
+  <button class="btn btn-primary btn-block" onclick="saveCategory(${editing?`'${c.id}'`:'null'})">${I.check} সংরক্ষণ করুন</button>
+  `;
+}
+function saveCategory(cid){
+  const name = document.getElementById('cat_name').value.trim();
+  if(!name){ showToast('নাম দিন','error'); return; }
+  if(cid){ state.categories.find(c=>c.id===cid).name=name; showToast('ক্যাটাগরি আপডেট হয়েছে','success'); }
+  else { state.categories.push({id:newId('c'),name}); showToast('ক্যাটাগরি যোগ হয়েছে','success'); }
+  saveState();
+  closeModal();
+}
+
+/* --- Purchase form modal --- */
+let purchaseItems = [];
+function purchaseFormModal(){
+  return `
+  <div class="sheet-handle"></div>
+  <div class="sheet-head"><h3>নতুন ক্রয়</h3><button class="close-x" onclick="closeModal()">${I.close}</button></div>
+  <div class="field"><label>সাপ্লায়ারের নাম</label><input id="pu_supplier" placeholder="সাপ্লায়ারের নাম"></div>
+  <div class="field"><label>পণ্য নির্বাচন করুন</label>
+    <select id="pu_product">
+      <option value="">-- পণ্য বাছাই করুন --</option>
+      ${state.products.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}
+      <option value="__new__">+ নতুন পণ্য</option>
+    </select>
+  </div>
+  <div id="pu_newProductFields" class="hide">
+    <div class="field"><label>নতুন পণ্যের নাম</label><input id="pu_new_name" placeholder="পণ্যের নাম"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>পরিমাণ</label><input id="pu_qty" type="number" min="1" value="1"></div>
+    <div class="field"><label>ক্রয় মূল্য (প্রতি একক)</label><input id="pu_price" type="number" min="0" value="0"></div>
+  </div>
+  <div class="field"><label>নতুন বিক্রয় মূল্য (প্রতি একক) — ফাঁকা রাখলে আগের বিক্রয় মূল্যই থাকবে, দিলে পুরাতন স্টকেও প্রযোজ্য হবে</label><input id="pu_sellprice" type="number" min="0" placeholder="যেমন: ৩৫"></div>
+  <button class="btn btn-ghost btn-block" onclick="addPurchaseItem()">${I.plus} আইটেম যোগ করুন</button>
+
+  <div style="margin-top:14px;">
+    ${purchaseItems.length===0?`<div class="empty-state" style="padding:16px;">${I.bag}<p>কোনো আইটেম যোগ করা হয়নি</p></div>`:
+    purchaseItems.map((it,idx)=>`
+      <div class="cart-line-item">
+        <div class="cli-info"><div class="cli-name">${it.name}</div><div class="cli-price">${it.qty} × ${cur(it.price)}${it.sellPrice?' · নতুন বিক্রয় মূল্য '+cur(it.sellPrice):''}</div></div>
+        <div class="cli-total">${cur(it.qty*it.price)}</div>
+        <button class="cli-remove" onclick="purchaseItems.splice(${idx},1); refreshPurchaseModal();">${I.close}</button>
+      </div>`).join('')}
+  </div>
+  ${purchaseItems.length?`
+  <div class="summary-row total"><span>মোট</span><span>${cur(purchaseItems.reduce((a,i)=>a+i.qty*i.price,0))}</span></div>
+  <div class="field" style="margin-top:10px;"><label>পরিশোধিত পরিমাণ</label><input id="pu_paid" type="number" min="0" value="${purchaseItems.reduce((a,i)=>a+i.qty*i.price,0)}"></div>
+  <button class="btn btn-primary btn-block" onclick="completePurchase()">${I.check} ক্রয় সম্পন্ন করুন</button>
+  `:''}
+  `;
+}
+function refreshPurchaseModal(){ if(state.modal==='newPurchase'){ document.querySelector('.sheet').innerHTML = purchaseFormModal(); attachPurchaseListeners(); } }
+function attachPurchaseListeners(){
+  const sel = document.getElementById('pu_product');
+  if(sel) sel.addEventListener('change',function(){
+    document.getElementById('pu_newProductFields').classList.toggle('hide', this.value!=='__new__');
+  });
+}
+function addPurchaseItem(){
+  const sel = document.getElementById('pu_product').value;
+  const qty = Number(document.getElementById('pu_qty').value)||1;
+  const price = Number(document.getElementById('pu_price').value)||0;
+  const sellPriceRaw = document.getElementById('pu_sellprice').value;
+  const sellPrice = sellPriceRaw!==''? Number(sellPriceRaw) : null;
+  if(!sel){ showToast('পণ্য বাছাই করুন','error'); return; }
+  if(sel==='__new__'){
+    const name = document.getElementById('pu_new_name').value.trim();
+    if(!name){ showToast('নতুন পণ্যের নাম দিন','error'); return; }
+    purchaseItems.push({productId:'__new__',name,qty,price,sellPrice,isNew:true});
+  } else {
+    const p = productById(sel);
+    purchaseItems.push({productId:sel,name:p.name,qty,price,sellPrice});
+  }
+  refreshPurchaseModal();
+}
+function completePurchase(){
+  const supplier = document.getElementById('pu_supplier').value.trim();
+  const paid = Number(document.getElementById('pu_paid').value)||0;
+  const total = purchaseItems.reduce((a,i)=>a+i.qty*i.price,0);
+  const due = Math.max(0,total-paid);
+  const now = new Date().toISOString();
+
+  purchaseItems.forEach(it=>{
+    if(it.isNew){
+      const sp = it.sellPrice && it.sellPrice>0 ? it.sellPrice : Math.round(it.price*1.15);
+      const np = {id:newId('p'),name:it.name,categoryId:state.categories[0]?.id||'',sku:'SKU-'+(uid++),barcode:'',purchasePrice:it.price,sellingPrice:sp,stock:0,minStock:5,unit:'পিস',batches:[]};
+      addStockBatch(np,it.qty,it.price,now);
+      state.products.push(np);
+      it.productId = np.id;
+    } else {
+      const p = productById(it.productId);
+      if(p){
+        addStockBatch(p,it.qty,it.price,now);
+        if(it.sellPrice && it.sellPrice>0){ p.sellingPrice = it.sellPrice; }
+        checkStockNotify(p);
+      }
     }
   });
-  logoutBtn.addEventListener('click', () => {
-    sessionStorage.removeItem('adminLoggedIn');
-    checkLoginStatus();
-    window.location.reload();
-  });
 
-  // ---------- FIREBASE & APP ----------
-  function initFirebaseApp() {
-    const firebaseConfig = {
-      apiKey: "AIzaSyDr2v7Q-zKSrkSnA7YMJIbahla5Xv3XdGk",
-      authDomain: "dokan-c5e3f.firebaseapp.com",
-      databaseURL: "https://dokan-c5e3f-default-rtdb.firebaseio.com",
-      projectId: "dokan-c5e3f",
-      storageBucket: "dokan-c5e3f.firebasestorage.app",
-      messagingSenderId: "896508499523",
-      appId: "1:896508499523:android:17cb403080904d022566f6"
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const configRef = ref(db, 'appConfig');
-    const transactionsRef = ref(db, 'transactions');
+  const purchase = {id:newId('pu'),date:now,supplier,items:purchaseItems.slice(),total,paid,due};
+  state.purchases.push(purchase);
+  addHistory('purchase', 'ক্রয় সম্পন্ন'+(supplier?' — '+supplier:''), total, purchase.id);
+  purchaseItems = [];
+  saveState();
+  showToast('ক্রয় সফলভাবে সম্পন্ন হয়েছে! নতুন বিক্রয় মূল্য পুরাতন স্টকেও প্রযোজ্য হয়েছে।','success');
+  closeModal();
+  go('purchase');
+}
 
-    const setupScreen = document.getElementById('setupScreen');
-    const dashboardScreen = document.getElementById('dashboardScreen');
-    const startSetupBtn = document.getElementById('startSetupBtn');
-    const globalResetBtn = document.getElementById('globalResetBtn');
-    const bkashSpan = document.getElementById('bkashAmount');
-    const cashSpan = document.getElementById('cashAmount');
-    const totalSpan = document.getElementById('totalAmount');
-    const dueReceiveSpan = document.getElementById('dueReceiveTotal');
-    const duePaySpan = document.getElementById('duePayTotal');
-    const txnCountSpan = document.getElementById('txnCountBadge');
-    const txnListDiv = document.getElementById('transactionList');
-    const openModalBtn = document.getElementById('openModalBtn');
-    const modal = document.getElementById('transactionModal');
-    const saveTxnBtn = document.getElementById('saveTxnBtn');
-    const txnAmount = document.getElementById('txnAmountInput');
-    const txnDesc = document.getElementById('txnDescInput');
-    const txnDateTime = document.getElementById('txnDateTime');
-    const contactName = document.getElementById('contactName');
-    const duePersonInput = document.getElementById('duePerson');
+/* ============ UTILS ============ */
+function escapeHtml(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escapeAttr(str){ return String(str||'').replace(/'/g,"\\'"); }
 
-    let allTransactions = [];      // this will hold all transactions from Firebase
-    let initialBkash = 0, initialCash = 0;
-    let isSetupDone = false;
+/* Reset purchaseItems when opening fresh purchase modal */
+const _origOpenModal = openModal;
+openModal = function(name,arg){
+  if(name==='newPurchase') purchaseItems=[];
+  _origOpenModal(name,arg);
+  if(name==='newPurchase') setTimeout(attachPurchaseListeners,0);
+};
 
-    // --- core business logic ---
-    function computeBalances() {
-      let bk = initialBkash, cs = initialCash;
-      for (let t of allTransactions) {
-        if (t.type === 'transfer') {
-          if (t.transferDir === 'cash_to_bkash') { cs -= t.amount; bk += t.amount; }
-          else { bk -= t.amount; cs += t.amount; }
-        } else if (t.type === 'cashflow') {
-          if (t.pocket === 'bkash') bk += (t.cashflowDir === 'income' ? t.amount : -t.amount);
-          else cs += (t.cashflowDir === 'income' ? t.amount : -t.amount);
-        }
-      }
-      return { bkash: bk, cash: cs };
-    }
-
-    function getDueTotals() {
-      let rec = 0, pay = 0;
-      for (let t of allTransactions) {
-        if (t.type === 'due') {
-          if (t.dueType === 'receive') rec += t.amount;
-          else pay += t.amount;
-        }
-      }
-      return { receive: rec, pay };
-    }
-
-    function updateUI() {
-      if (!isSetupDone) return;
-      const { bkash, cash } = computeBalances();
-      bkashSpan.innerText = bkash.toLocaleString('bn-BD');
-      cashSpan.innerText = cash.toLocaleString('bn-BD');
-      totalSpan.innerText = (bkash + cash).toLocaleString('bn-BD');
-      const { receive, pay } = getDueTotals();
-      dueReceiveSpan.innerText = receive.toLocaleString('bn-BD');
-      duePaySpan.innerText = pay.toLocaleString('bn-BD');
-      txnCountSpan.innerText = allTransactions.length + ' টি';
-      renderTransactionList();   // always render full list respecting current filter
-    }
-
-    function renderTransactionList() {
-      // get active filter
-      const activeChip = document.querySelector('.filter-chip.active');
-      const filter = activeChip ? activeChip.dataset.filter : 'all';
-      let filtered = [...allTransactions];
-      if (filter === 'transfer') filtered = allTransactions.filter(t => t.type === 'transfer');
-      else if (filter === 'cashflow') filtered = allTransactions.filter(t => t.type === 'cashflow');
-      else if (filter === 'due') filtered = allTransactions.filter(t => t.type === 'due');
-      // else 'all' shows everything
-
-      if (filtered.length === 0) {
-        txnListDiv.innerHTML = `<div class="txn-item">📭 কোনো লেনদেন পাওয়া যায়নি</div>`;
-        return;
-      }
-
-      txnListDiv.innerHTML = filtered.map(txn => {
-        let icon = '', title = '', amountClass = '', sign = '';
-        if (txn.type === 'transfer') {
-          icon = txn.transferDir === 'cash_to_bkash' ? '🔄💵→📱' : '🔄📱→💵';
-          title = txn.transferDir === 'cash_to_bkash' ? 'ক্যাশ → বিকাশ' : 'বিকাশ → ক্যাশ';
-          amountClass = 'positive';
-          sign = '⇄ ';
-        } else if (txn.type === 'cashflow') {
-          icon = txn.cashflowDir === 'income' ? '📈 আয়' : '📉 খরচ';
-          title = `${txn.pocket === 'bkash' ? 'বিকাশ' : 'ক্যাশ'} - ${txn.cashflowDir === 'income' ? 'আয়' : 'খরচ'}`;
-          amountClass = txn.cashflowDir === 'income' ? 'positive' : 'negative';
-          sign = txn.cashflowDir === 'income' ? '+' : '-';
-        } else {
-          icon = '⏳';
-          title = txn.dueType === 'receive' ? 'পাবো (বাকি)' : 'দেবো (বাকি)';
-          amountClass = 'due-color';
-          sign = txn.dueType === 'receive' ? '+' : '-';
-          if (txn.person) title += ` · ${txn.person}`;
-        }
-        const desc = txn.desc || (txn.type === 'transfer' ? 'ট্রান্সফার' : (txn.type === 'due' ? 'বাকি লেনদেন' : 'লেনদেন'));
-        const date = new Date(txn.timestamp).toLocaleString('bn-BD', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
-        const nameHtml = txn.contactName ? `<div style="font-size:10px; color:#94a3b8;">👤 ${escapeHtml(txn.contactName)}</div>` : '';
-        return `
-          <div class="txn-item">
-            <div class="txn-icon">${icon}</div>
-            <div class="txn-info">
-              <div class="txn-title">${escapeHtml(desc)}</div>
-              <div class="txn-date">${date} · ${title}</div>
-              ${nameHtml}
-            </div>
-            <div class="txn-amount ${amountClass}">${sign} ৳ ${txn.amount.toLocaleString('bn-BD')}</div>
-            <button class="delete-btn" data-id="${txn.id}">🗑</button>
-          </div>
-        `;
-      }).join('');
-
-      // Attach delete listeners
-      document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          const id = btn.dataset.id;
-          if (confirm('লেনদেনটি স্থায়ীভাবে মুছে ফেলবেন?')) {
-            await remove(ref(db, `transactions/${id}`));
-          }
-        });
-      });
-    }
-
-    function escapeHtml(str) {
-      return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-    }
-
-    // Firebase listeners
-    function listenTransactions() {
-      onValue(transactionsRef, (snapshot) => {
-        const txns = [];
-        if (snapshot.exists()) {
-          snapshot.forEach(child => {
-            txns.push({ id: child.key, ...child.val() });
-          });
-          // newest first
-          txns.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
-        }
-        allTransactions = txns;
-        if (isSetupDone) updateUI();
-      });
-    }
-
-    function listenConfig() {
-      onValue(configRef, (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          initialBkash = data.initialBkash || 0;
-          initialCash = data.initialCash || 0;
-          isSetupDone = true;
-          setupScreen.style.display = 'none';
-          dashboardScreen.style.display = 'block';
-          updateUI();
-        } else {
-          isSetupDone = false;
-          setupScreen.style.display = 'block';
-          dashboardScreen.style.display = 'none';
-        }
-      });
-    }
-
-    // Setup & Reset
-    startSetupBtn.addEventListener('click', async () => {
-      const bk = parseFloat(document.getElementById('initBkash').value) || 0;
-      const cs = parseFloat(document.getElementById('initCash').value) || 0;
-      if (bk < 0 || cs < 0) { alert('ঋণাত্মক মান হতে পারে না'); return; }
-      await set(configRef, { initialBkash: bk, initialCash: cs });
-      await remove(transactionsRef);
-      allTransactions = [];
-      initialBkash = bk; initialCash = cs;
-      isSetupDone = true;
-      setupScreen.style.display = 'none';
-      dashboardScreen.style.display = 'block';
-      updateUI();
-    });
-
-    globalResetBtn.addEventListener('click', async () => {
-      if (confirm('⚠️ সব ব্যালান্স ও লেনদেন মুছে যাবে। নিশ্চিত?')) {
-        await remove(configRef);
-        await remove(transactionsRef);
-        setupScreen.style.display = 'block';
-        dashboardScreen.style.display = 'none';
-        isSetupDone = false;
-        allTransactions = [];
-      }
-    });
-
-    // Modal dynamic sections
-    let currentType = "transfer";
-    let transferDir = "cash_to_bkash";
-    let cashflowPocket = "bkash";
-    let cashflowDir = "income";
-    let dueType = "receive";
-
-    function updateModalSections() {
-      document.getElementById('transferPanel').style.display = currentType === 'transfer' ? 'block' : 'none';
-      document.getElementById('cashflowPanel').style.display = currentType === 'cashflow' ? 'block' : 'none';
-      document.getElementById('duePanel').style.display = currentType === 'due' ? 'block' : 'none';
-      const bt = document.getElementById('typeTransfer'), bc = document.getElementById('typeCashFlow'), bd = document.getElementById('typeDue');
-      bt.classList.toggle('active-transfer', currentType === 'transfer');
-      bc.classList.toggle('active-cashflow', currentType === 'cashflow');
-      bd.classList.toggle('active-due', currentType === 'due');
-    }
-    document.getElementById('typeTransfer').onclick = () => { currentType = 'transfer'; updateModalSections(); };
-    document.getElementById('typeCashFlow').onclick = () => { currentType = 'cashflow'; updateModalSections(); };
-    document.getElementById('typeDue').onclick = () => { currentType = 'due'; updateModalSections(); };
-
-    // Transfer direction
-    document.querySelectorAll('[data-transfer]').forEach(el => {
-      el.onclick = () => {
-        transferDir = el.dataset.transfer;
-        document.querySelectorAll('[data-transfer]').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-      };
-    });
-    document.querySelector('[data-transfer="cash_to_bkash"]').classList.add('selected');
-    // Cashflow pocket & direction
-    document.querySelectorAll('[data-pocket]').forEach(el => {
-      el.onclick = () => {
-        cashflowPocket = el.dataset.pocket;
-        document.querySelectorAll('[data-pocket]').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-      };
-    });
-    document.querySelectorAll('[data-cfdir]').forEach(el => {
-      el.onclick = () => {
-        cashflowDir = el.dataset.cfdir;
-        document.querySelectorAll('[data-cfdir]').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-      };
-    });
-    document.querySelector('[data-pocket="bkash"]').classList.add('selected');
-    document.querySelector('[data-cfdir="income"]').classList.add('selected');
-    // Due type
-    document.querySelectorAll('[data-due]').forEach(el => {
-      el.onclick = () => {
-        dueType = el.dataset.due;
-        document.querySelectorAll('[data-due]').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-      };
-    });
-    document.querySelector('[data-due="receive"]').classList.add('selected');
-
-    // Set default datetime to now
-    function setDefaultDateTime() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      txnDateTime.value = `${year}-${month}-${day}T${hours}:${minutes}`;
-    }
-
-    openModalBtn.onclick = () => {
-      setDefaultDateTime();
-      modal.classList.add('open');
-    };
-    modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('open'); };
-
-    saveTxnBtn.onclick = async () => {
-      const amount = parseFloat(txnAmount.value);
-      if (!amount || amount <= 0) { alert("সঠিক পরিমাণ দিন"); return; }
-      if (!isSetupDone) { alert("প্রথমে ব্যালান্স সেটআপ করুন"); return; }
-      const { bkash, cash } = computeBalances();
-      if (currentType === 'transfer') {
-        if (transferDir === 'cash_to_bkash' && cash < amount) { alert("ক্যাশে পর্যাপ্ত টাকা নেই"); return; }
-        if (transferDir === 'bkash_to_cash' && bkash < amount) { alert("বিকাশে পর্যাপ্ত টাকা নেই"); return; }
-      } else if (currentType === 'cashflow') {
-        if (cashflowDir === 'expense') {
-          if (cashflowPocket === 'bkash' && bkash < amount) { alert("বিকাশে পর্যাপ্ত টাকা নেই"); return; }
-          if (cashflowPocket === 'cash' && cash < amount) { alert("ক্যাশে পর্যাপ্ত টাকা নেই"); return; }
-        }
-      }
-      let timestamp = Date.now();
-      if (txnDateTime.value) {
-        const customDate = new Date(txnDateTime.value);
-        if (!isNaN(customDate.getTime())) timestamp = customDate.getTime();
-      }
-      const txnObj = {
-        type: currentType,
-        amount: amount,
-        desc: txnDesc.value.trim() || "",
-        contactName: contactName.value.trim() || "",
-        timestamp: timestamp
-      };
-      if (currentType === 'transfer') txnObj.transferDir = transferDir;
-      else if (currentType === 'cashflow') {
-        txnObj.pocket = cashflowPocket;
-        txnObj.cashflowDir = cashflowDir;
-      } else if (currentType === 'due') {
-        txnObj.dueType = dueType;
-        const person = duePersonInput.value.trim();
-        if (person) txnObj.person = person;
-      }
-      await push(transactionsRef, txnObj);
-      // Reset form
-      txnAmount.value = '';
-      txnDesc.value = '';
-      contactName.value = '';
-      duePersonInput.value = '';
-      setDefaultDateTime();
-      modal.classList.remove('open');
-    };
-
-    // Filter buttons - re-render on click
-    document.querySelectorAll('.filter-chip').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        renderTransactionList();   // immediately re-render with new filter
-      });
-    });
-
-    // Start listening
-    listenConfig();
-    listenTransactions();
+/* ============ BOOT ============ */
+render(); // shows login screen immediately while auth state resolves
+auth.onAuthStateChanged(async (user)=>{
+  currentUser = user;
+  if(user){
+    dataLoaded = false;
+    render();
+    await loadUserData(user.uid);
+    state.view = 'dashboard';
+    render();
+  } else {
+    dataLoaded = false;
+    authBusy = false;
+    render();
   }
-  checkLoginStatus();
+});
 </script>
 </body>
 </html>
